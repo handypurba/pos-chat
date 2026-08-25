@@ -646,6 +646,21 @@ ipcMain.on('pilih-workspace', (event, id) => {
     tampilkanWorkspace(id);
 });
 
+/** BrowserView (tab WA/Shopee/Tokped) SELALU digambar di atas konten HTML biasa (sidebar.html),
+ * jadi modal/overlay apa pun (mis. "Tambah Tab Baru") akan tertutup di belakangnya kalau tab
+ * web sedang aktif — kelihatan seperti "tidak merespons" padahal sebenarnya cuma tak terlihat.
+ * Dipanggil renderer sebelum menampilkan modal, lalu dikembalikan setelah modal ditutup. */
+ipcMain.on('sembunyikan-view-modal', () => {
+    mainWindow?.setBrowserView(null);
+});
+
+ipcMain.on('tampilkan-view-modal', () => {
+    if (activeId && views[activeId]) {
+        mainWindow?.setBrowserView(views[activeId]);
+        aturUkuranView(views[activeId]);
+    }
+});
+
 /** Reload manual satu tab web (WA/Shopee/Tokped) — dipakai saat sesi baru login ulang atau
  * tab macet/nyangkut, tanpa perlu tutup-buka seluruh aplikasi. */
 ipcMain.on('workspace-reload', (event, id) => {

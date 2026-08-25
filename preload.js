@@ -9,6 +9,8 @@ contextBridge.exposeInMainWorld('chatHub', {
     onDaftarWorkspace: (callback) => ipcRenderer.on('daftar-workspace', (_e, data) => callback(data)),
     onWorkspaceAktif: (callback) => ipcRenderer.on('workspace-aktif', (_e, id) => callback(id)),
     pilihWorkspace: (id) => ipcRenderer.send('pilih-workspace', id),
+    sembunyikanViewModal: () => ipcRenderer.send('sembunyikan-view-modal'),
+    tampilkanViewModal: () => ipcRenderer.send('tampilkan-view-modal'),
     renameWorkspace: (id, namaBaru) => ipcRenderer.invoke('workspace-rename', { id, namaBaru }),
     reorderWorkspace: (urutanId) => ipcRenderer.invoke('workspace-reorder', urutanId),
     reloadWorkspace: (id) => ipcRenderer.send('workspace-reload', id),

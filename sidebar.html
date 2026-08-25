@@ -584,6 +584,7 @@
     const WARNA_PRESET = { whatsapp: '#0F6E56', shopee: '#993C1D', tokped: '#185FA5', custom: '#4b5563' };
 
     function bukaModalTambah() {
+        window.chatHub.sembunyikanViewModal();
         document.getElementById('tambah-nama').value = '';
         selectTambahPlatform.value = 'whatsapp';
         inputTambahUrlCustom.value = '';
@@ -594,6 +595,7 @@
 
     function tutupModalTambah() {
         modalTambahOverlay.classList.remove('tampil');
+        window.chatHub.tampilkanViewModal();
     }
 
     selectTambahPlatform.addEventListener('change', () => {
