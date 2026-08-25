@@ -51,8 +51,9 @@
       "allowToChangeInstallationDirectory": true
     },
     "publish": {
-      "provider": "generic",
-      "url": "https://pos.hanmar.id/chathub-updates/"
+      "provider": "github",
+      "owner": "handypurba",
+      "repo": "pos-chat"
     }
   }
 }
