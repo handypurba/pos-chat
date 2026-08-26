@@ -3,8 +3,8 @@
   { "id": "whatsapp-2", "nama": "WhatsApp 2", "url": "https://web.whatsapp.com", "warna": "#1D9E75", "tipe": "web" },
   { "id": "whatsapp-3", "nama": "WhatsApp 3", "url": "https://web.whatsapp.com", "warna": "#0B8457", "tipe": "web" },
   { "id": "shopee-dlp", "nama": "Shopee DLP", "url": "https://seller.shopee.co.id", "warna": "#993C1D", "tipe": "web" },
-  { "id": "tokped-dlp", "nama": "Tokped DLP", "url": "https://seller-id.tokopedia.com/chat/inbox", "warna": "#185FA5", "tipe": "web" },
+  { "id": "tokped-dlp", "nama": "Tokped DLP", "url": "https://seller-id.tokopedia.com/", "warna": "#185FA5", "tipe": "web" },
   { "id": "shopee-hf", "nama": "Shopee HF", "url": "https://seller.shopee.co.id", "warna": "#993C1D", "tipe": "web" },
-  { "id": "tokped-hf", "nama": "Tokped HF", "url": "https://seller-id.tokopedia.com/chat/inbox", "warna": "#185FA5", "tipe": "web" },
+  { "id": "tokped-hf", "nama": "Tokped HF", "url": "https://seller-id.tokopedia.com/", "warna": "#185FA5", "tipe": "web" },
   { "id": "broadcast", "nama": "Broadcast WA", "warna": "#534AB7", "tipe": "broadcast" }
 ]

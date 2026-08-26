@@ -416,6 +416,34 @@ function buatView(ws) {
     view.webContents.loadURL(ws.url);
     pantauJudul(ws, view);
 
+    // Tokopedia (sekarang gabung Seller Center Tokopedia+TikTok Shop): buka langsung ke URL
+    // chat spesifik (dengan oec_seller_id dkk) sering nyangkut layar putih di dalam embed —
+    // situsnya sepertinya butuh "datang" dari halaman utama seller.tokopedia.com dulu (referrer/
+    // session context), bukan loncat langsung. Sebagai jaring pengaman tambahan: tiap kali
+    // halaman ini selesai load, coba cari & klik tombol/link "Ke Seller Center" (teks yang
+    // dipakai Tokopedia di halaman dashboard lama sebelum diarahkan ke Seller Center gabungan)
+    // kalau memang ada — aman/idempoten, tidak ngapa-ngapain kalau tombolnya tidak ketemu.
+    if (platformDari(ws.id) === 'tokped') {
+        view.webContents.on('did-finish-load', () => {
+            view.webContents
+                .executeJavaScript(
+                    `(() => {
+                        const target = 'ke seller center';
+                        let tries = 0;
+                        const attempt = () => {
+                            tries += 1;
+                            const clickable = Array.from(document.querySelectorAll('a,button,[role="button"]'));
+                            const el = clickable.find((e) => e.innerText && e.innerText.trim().toLowerCase().includes(target));
+                            if (el) { el.click(); return; }
+                            if (tries < 20) setTimeout(attempt, 500);
+                        };
+                        attempt();
+                    })();`
+                )
+                .catch(() => {});
+        });
+    }
+
     // Beberapa fitur (mis. Chat Shopee Seller Centre) buka jendela baru (window.open) —
     // supaya user tetap fokus di 1 jendela aplikasi ini, alihkan ke tab yang sama, jangan
     // biarkan lompat ke jendela/browser terpisah di luar aplikasi.
