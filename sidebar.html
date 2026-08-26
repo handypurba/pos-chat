@@ -39,6 +39,18 @@
     }
     .ws-icon .badge-notif.tampil { display: flex; }
 
+    /* Tombol reload kecil per tab — supaya tidak perlu klik-kanan (gampang kelewatan) kalau
+       tab web nyangkut/layar putih (mis. Tokopedia yang kadang gagal render). Muncul cuma pas
+       tab-nya di-hover (di layar sempit sidebar, ikon permanen bikin sesak). */
+    .ws-icon .btn-reload-tab {
+        position: absolute; bottom: -4px; right: -4px; width: 20px; height: 20px;
+        background: #374151; color: #fff; border-radius: 999px; border: 2px solid #1f2937;
+        display: flex; align-items: center; justify-content: center; font-size: 11px;
+        opacity: 0; transition: opacity 0.15s, background 0.15s; cursor: pointer;
+    }
+    .ws-icon:hover .btn-reload-tab { opacity: 1; }
+    .ws-icon .btn-reload-tab:hover { background: #4b5563; }
+
     .ws-tambah {
         width: 76px; height: 40px; border-radius: 14px; flex-shrink: 0;
         border: 2px dashed rgba(255,255,255,0.35); display: flex; align-items: center; justify-content: center;
@@ -516,6 +528,19 @@
             badge.className = 'badge-notif';
             badge.id = 'badge-' + ws.id;
             el.appendChild(badge);
+            if (ws.tipe === 'web') {
+                const btnReload = document.createElement('span');
+                btnReload.className = 'btn-reload-tab';
+                btnReload.textContent = '↻';
+                btnReload.title = 'Reload tab ini (kalau nyangkut/layar putih)';
+                btnReload.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    window.chatHub.reloadWorkspace(ws.id);
+                    el.classList.add('sedang-reload');
+                    setTimeout(() => el.classList.remove('sedang-reload'), 600);
+                });
+                el.appendChild(btnReload);
+            }
             sidebar.appendChild(el);
         });
 
