@@ -697,7 +697,18 @@
             badge.classList.add('tampil');
         }
         putarNotif(platform);
+        tampilkanToast(workspaceId, jumlah);
     });
+
+    /** Notifikasi kecil Windows (muncul sendiri di pojok kanan bawah layar, bawaan sistem) —
+     * terpisah dari suara/badge di atas. Klik notifikasinya langsung pindah ke tab terkait. */
+    function tampilkanToast(workspaceId, jumlah) {
+        if (!('Notification' in window)) return;
+        const ws = daftarWorkspace.find((w) => w.id === workspaceId);
+        const nama = ws ? ws.nama : 'Chat';
+        const notif = new Notification(nama, { body: `${jumlah} pesan baru`, silent: true });
+        notif.onclick = () => window.chatHub.pilihWorkspace(workspaceId);
+    }
 
     window.chatHub.onNotifBersih((workspaceId) => {
         const badge = document.getElementById('badge-' + workspaceId);
