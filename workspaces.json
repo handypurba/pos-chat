@@ -6,5 +6,6 @@
   { "id": "tokped-dlp", "nama": "Tokped DLP", "url": "https://seller-id.tokopedia.com/", "warna": "#185FA5", "tipe": "web" },
   { "id": "shopee-hf", "nama": "Shopee HF", "url": "https://seller.shopee.co.id", "warna": "#993C1D", "tipe": "web" },
   { "id": "tokped-hf", "nama": "Tokped HF", "url": "https://seller-id.tokopedia.com/", "warna": "#185FA5", "tipe": "web" },
+  { "id": "webstore-chat", "nama": "Live Chat Webstore", "url": "https://pos.hanmar.id/chat-webstore", "warna": "#0072C6", "tipe": "web" },
   { "id": "broadcast", "nama": "Broadcast WA", "warna": "#534AB7", "tipe": "broadcast" }
 ]
