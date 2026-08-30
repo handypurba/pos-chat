@@ -11,6 +11,19 @@ contextBridge.exposeInMainWorld('chatHub', {
     pilihWorkspace: (id) => ipcRenderer.send('pilih-workspace', id),
     sembunyikanViewModal: () => ipcRenderer.send('sembunyikan-view-modal'),
     tampilkanViewModal: () => ipcRenderer.send('tampilkan-view-modal'),
+    onStatusKoneksiTab: (callback) => ipcRenderer.on('status-koneksi-tab', (_e, data) => callback(data)),
+
+    daftarBalasanCepat: () => ipcRenderer.invoke('balasan-cepat-daftar'),
+    tambahBalasanCepat: (teks) => ipcRenderer.invoke('balasan-cepat-tambah', teks),
+    hapusBalasanCepat: (id) => ipcRenderer.invoke('balasan-cepat-hapus', id),
+
+    daftarPengingat: () => ipcRenderer.invoke('pengingat-daftar'),
+    tambahPengingat: (data) => ipcRenderer.invoke('pengingat-tambah', data),
+    hapusPengingat: (id) => ipcRenderer.invoke('pengingat-hapus', id),
+
+    muatDnd: () => ipcRenderer.invoke('dnd-muat'),
+    simpanDnd: (konfig) => ipcRenderer.invoke('dnd-simpan', konfig),
+    cekDnd: (platform) => ipcRenderer.invoke('dnd-cek', platform),
     renameWorkspace: (id, namaBaru) => ipcRenderer.invoke('workspace-rename', { id, namaBaru }),
     reorderWorkspace: (urutanId) => ipcRenderer.invoke('workspace-reorder', urutanId),
     reloadWorkspace: (id) => ipcRenderer.send('workspace-reload', id),

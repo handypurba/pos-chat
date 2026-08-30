@@ -39,6 +39,14 @@
     }
     .ws-icon .badge-notif.tampil { display: flex; }
 
+    /* Titik merah kecil di pojok kiri-atas — tanda channel butuh perhatian (logout sendiri,
+       QR belum discan, dst). Beda posisi dari badge-notif (kanan-atas) biar tidak tumpang tindih. */
+    .ws-icon .titik-terputus {
+        position: absolute; top: -3px; left: -3px; width: 12px; height: 12px;
+        background: #dc2626; border-radius: 999px; border: 2px solid #1f2937; display: none;
+    }
+    .ws-icon .titik-terputus.tampil { display: block; }
+
     /* Tombol reload kecil per tab — supaya tidak perlu klik-kanan (gampang kelewatan) kalau
        tab web nyangkut/layar putih (mis. Tokopedia yang kadang gagal render). Muncul cuma pas
        tab-nya di-hover (di layar sempit sidebar, ikon permanen bikin sesak). */
@@ -98,6 +106,46 @@
     #user-bawah .nama { color: #e5e7eb; font-size: 10px; text-align: center; line-height: 1.2; }
     #user-bawah .btn-logout-kecil { color: #f87171; font-size: 10px; cursor: pointer; }
     #user-bawah .btn-logout-kecil:hover { text-decoration: underline; }
+    #user-bawah .btn-alat-bantu {
+        font-size: 18px; cursor: pointer; line-height: 1; padding: 4px;
+        border-radius: 8px; transition: background 0.15s;
+    }
+    #user-bawah .btn-alat-bantu:hover { background: rgba(255,255,255,0.1); }
+
+    #modal-alat-bantu-overlay {
+        display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 50;
+        align-items: center; justify-content: center;
+    }
+    #modal-alat-bantu-overlay.tampil { display: flex; }
+    #modal-alat-bantu {
+        background: #fff; border-radius: 14px; width: 420px; max-height: 80vh;
+        display: flex; flex-direction: column; overflow: hidden;
+    }
+    #modal-alat-bantu .tab-alat-bantu {
+        display: flex; border-bottom: 1px solid #e5e7eb; flex-shrink: 0;
+    }
+    #modal-alat-bantu .tab-alat-bantu button {
+        flex: 1; padding: 12px 8px; font-size: 12px; font-weight: 600; color: #6b7280;
+        background: none; border: none; cursor: pointer; border-bottom: 2px solid transparent;
+    }
+    #modal-alat-bantu .tab-alat-bantu button.aktif { color: #111827; border-bottom-color: #111827; }
+    #modal-alat-bantu .isi-tab { padding: 16px; overflow-y: auto; }
+    #modal-alat-bantu .isi-tab-panel { display: none; }
+    #modal-alat-bantu .isi-tab-panel.aktif { display: block; }
+    #modal-alat-bantu .item-list {
+        display: flex; align-items: flex-start; gap: 8px; padding: 8px 0;
+        border-bottom: 1px solid #f3f4f6; font-size: 12px;
+    }
+    #modal-alat-bantu .item-list .teks-item { flex: 1; white-space: pre-wrap; word-break: break-word; }
+    #modal-alat-bantu .item-list button {
+        flex-shrink: 0; font-size: 11px; padding: 3px 8px; border-radius: 6px; border: 1px solid #d1d5db;
+        background: #fff; cursor: pointer;
+    }
+    #modal-alat-bantu textarea, #modal-alat-bantu input, #modal-alat-bantu select {
+        width: 100%; padding: 6px 8px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 12px;
+        margin-bottom: 6px; font-family: inherit;
+    }
+    #modal-alat-bantu .baris-aksi { display: flex; justify-content: flex-end; gap: 6px; padding: 10px 16px; border-top: 1px solid #e5e7eb; flex-shrink: 0; }
 
     #broadcast-panel {
         position: fixed; top: 0; left: 96px; right: 0; bottom: 0;
@@ -192,6 +240,61 @@
         <div class="baris-aksi">
             <button class="aksi sekunder kecil" id="btn-batal-tambah">Batal</button>
             <button class="aksi kecil" id="btn-simpan-tambah">Tambah</button>
+        </div>
+    </div>
+</div>
+
+<div id="modal-alat-bantu-overlay">
+    <div id="modal-alat-bantu">
+        <div class="tab-alat-bantu">
+            <button data-tab="balasan" class="aktif">Balasan Cepat</button>
+            <button data-tab="pengingat">Pengingat</button>
+            <button data-tab="dnd">Jangan Ganggu</button>
+        </div>
+
+        <div class="isi-tab">
+            <!-- Balasan Cepat -->
+            <div class="isi-tab-panel aktif" id="panel-balasan">
+                <textarea id="input-balasan-baru" rows="2" placeholder="Tulis balasan siap-pakai, mis. Terima kasih sudah order, mohon tunggu konfirmasi ya kak"></textarea>
+                <button class="aksi kecil" id="btn-tambah-balasan" style="width:100%;margin-bottom:10px;">+ Tambah</button>
+                <div id="daftar-balasan"></div>
+            </div>
+
+            <!-- Pengingat Follow-up -->
+            <div class="isi-tab-panel" id="panel-pengingat">
+                <label style="font-size:11px;color:#6b7280;">Tab</label>
+                <select id="pengingat-workspace"></select>
+                <label style="font-size:11px;color:#6b7280;">Waktu</label>
+                <input type="datetime-local" id="pengingat-waktu">
+                <label style="font-size:11px;color:#6b7280;">Catatan (opsional)</label>
+                <input type="text" id="pengingat-catatan" placeholder="mis. Follow up penawaran grosir">
+                <button class="aksi kecil" id="btn-tambah-pengingat" style="width:100%;margin-bottom:10px;">+ Tambah Pengingat</button>
+                <div id="daftar-pengingat"></div>
+            </div>
+
+            <!-- Jangan Ganggu -->
+            <div class="isi-tab-panel" id="panel-dnd">
+                <label style="display:flex;align-items:center;gap:6px;font-size:12px;margin-bottom:10px;">
+                    <input type="checkbox" id="dnd-aktif" style="width:auto;margin:0;"> Aktifkan Jangan Ganggu terjadwal
+                </label>
+                <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
+                    <div style="flex:1;">
+                        <label style="font-size:11px;color:#6b7280;">Mulai</label>
+                        <input type="text" id="dnd-mulai" placeholder="20:00">
+                    </div>
+                    <div style="flex:1;">
+                        <label style="font-size:11px;color:#6b7280;">Selesai</label>
+                        <input type="text" id="dnd-selesai" placeholder="08:00">
+                    </div>
+                </div>
+                <label style="font-size:11px;color:#6b7280;">Bungkam suara/toast utk channel:</label>
+                <div id="dnd-platform-list" style="font-size:12px;margin-bottom:10px;"></div>
+                <button class="aksi kecil" id="btn-simpan-dnd" style="width:100%;">Simpan Pengaturan</button>
+            </div>
+        </div>
+
+        <div class="baris-aksi">
+            <button class="aksi sekunder kecil" id="btn-tutup-alat-bantu">Tutup</button>
         </div>
     </div>
 </div>
@@ -353,6 +456,7 @@
     window.chatHub.onLoginBerhasil((user) => {
         loginOverlay.classList.remove('tampil');
         userBawah.innerHTML = `
+            <div class="btn-alat-bantu" id="btn-alat-bantu" title="Balasan cepat, pengingat, jangan ganggu">🛠</div>
             <div class="nama">👤 ${user.nama}</div>
             <div class="btn-logout-kecil" id="btn-logout-chathub">Logout</div>
         `;
@@ -361,6 +465,7 @@
             if (!confirm('Logout dari POS Chat? Tab-tab chat akan ditutup (sesi WA/Shopee/Tokped di tiap tab tidak ikut hilang).')) return;
             await window.chatHub.logoutChatHub();
         });
+        document.getElementById('btn-alat-bantu').addEventListener('click', bukaModalAlatBantu);
     });
 
     async function submitLogin() {
@@ -529,6 +634,13 @@
             badge.id = 'badge-' + ws.id;
             el.appendChild(badge);
             if (ws.tipe === 'web') {
+                const titikTerputus = document.createElement('span');
+                titikTerputus.className = 'titik-terputus';
+                titikTerputus.id = 'terputus-' + ws.id;
+                titikTerputus.title = 'Perlu login ulang / terputus';
+                el.appendChild(titikTerputus);
+            }
+            if (ws.tipe === 'web') {
                 const btnReload = document.createElement('span');
                 btnReload.className = 'btn-reload-tab';
                 btnReload.textContent = '↻';
@@ -649,6 +761,151 @@
         toast(`Tab "${nama}" ditambahkan.`, 'sukses');
     });
 
+    // ================= Modal Alat Bantu: Balasan Cepat, Pengingat, Jangan Ganggu =================
+    const modalAlatBantuOverlay = document.getElementById('modal-alat-bantu-overlay');
+
+    async function bukaModalAlatBantu() {
+        window.chatHub.sembunyikanViewModal();
+        modalAlatBantuOverlay.classList.add('tampil');
+        await Promise.all([renderBalasanCepat(), renderPengingat(), renderDnd()]);
+    }
+
+    function tutupModalAlatBantu() {
+        modalAlatBantuOverlay.classList.remove('tampil');
+        window.chatHub.tampilkanViewModal();
+    }
+
+    document.getElementById('btn-tutup-alat-bantu').addEventListener('click', tutupModalAlatBantu);
+    modalAlatBantuOverlay.addEventListener('click', (e) => {
+        if (e.target === modalAlatBantuOverlay) tutupModalAlatBantu();
+    });
+
+    document.querySelectorAll('.tab-alat-bantu button').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-alat-bantu button').forEach((b) => b.classList.remove('aktif'));
+            document.querySelectorAll('.isi-tab-panel').forEach((p) => p.classList.remove('aktif'));
+            btn.classList.add('aktif');
+            document.getElementById('panel-' + btn.dataset.tab).classList.add('aktif');
+        });
+    });
+
+    // --- Balasan Cepat ---
+    async function renderBalasanCepat() {
+        const daftar = await window.chatHub.daftarBalasanCepat();
+        const el = document.getElementById('daftar-balasan');
+        el.innerHTML = daftar.length
+            ? ''
+            : '<p style="font-size:11px;color:#9ca3af;text-align:center;padding:8px 0;">Belum ada balasan cepat.</p>';
+
+        daftar.forEach((b) => {
+            const baris = document.createElement('div');
+            baris.className = 'item-list';
+            baris.innerHTML = `
+                <span class="teks-item"></span>
+                <button data-aksi="salin">Salin</button>
+                <button data-aksi="hapus" style="color:#dc2626;">Hapus</button>
+            `;
+            baris.querySelector('.teks-item').textContent = b.teks;
+            baris.querySelector('[data-aksi="salin"]').addEventListener('click', async () => {
+                await navigator.clipboard.writeText(b.teks);
+                toast('Disalin ke clipboard.', 'sukses');
+            });
+            baris.querySelector('[data-aksi="hapus"]').addEventListener('click', async () => {
+                await window.chatHub.hapusBalasanCepat(b.id);
+                renderBalasanCepat();
+            });
+            el.appendChild(baris);
+        });
+    }
+
+    document.getElementById('btn-tambah-balasan').addEventListener('click', async () => {
+        const input = document.getElementById('input-balasan-baru');
+        const teks = input.value.trim();
+        if (!teks) { toast('Tulis dulu balasannya.', 'gagal'); return; }
+        await window.chatHub.tambahBalasanCepat(teks);
+        input.value = '';
+        renderBalasanCepat();
+    });
+
+    // --- Pengingat Follow-up ---
+    async function renderPengingat() {
+        const select = document.getElementById('pengingat-workspace');
+        select.innerHTML = daftarWorkspace
+            .filter((w) => w.tipe === 'web')
+            .map((w) => `<option value="${w.id}">${w.nama}</option>`)
+            .join('');
+
+        const daftar = await window.chatHub.daftarPengingat();
+        const el = document.getElementById('daftar-pengingat');
+        const belumLewat = daftar.filter((p) => new Date(p.waktuIso) >= new Date() || !p.sudahDiingatkan);
+        el.innerHTML = belumLewat.length
+            ? ''
+            : '<p style="font-size:11px;color:#9ca3af;text-align:center;padding:8px 0;">Belum ada pengingat.</p>';
+
+        belumLewat.forEach((p) => {
+            const waktu = new Date(p.waktuIso).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
+            const baris = document.createElement('div');
+            baris.className = 'item-list';
+            baris.innerHTML = `
+                <span class="teks-item"><strong></strong><br><span style="color:#6b7280;"></span></span>
+                <button data-aksi="hapus" style="color:#dc2626;">Hapus</button>
+            `;
+            baris.querySelector('strong').textContent = `${p.workspaceNama} — ${waktu}`;
+            baris.querySelector('span > span').textContent = p.catatan || '(tanpa catatan)';
+            baris.querySelector('[data-aksi="hapus"]').addEventListener('click', async () => {
+                await window.chatHub.hapusPengingat(p.id);
+                renderPengingat();
+            });
+            el.appendChild(baris);
+        });
+    }
+
+    document.getElementById('btn-tambah-pengingat').addEventListener('click', async () => {
+        const workspaceId = document.getElementById('pengingat-workspace').value;
+        const waktuInput = document.getElementById('pengingat-waktu').value;
+        const catatan = document.getElementById('pengingat-catatan').value.trim();
+        if (!workspaceId || !waktuInput) { toast('Pilih tab & waktu dulu.', 'gagal'); return; }
+
+        const ws = daftarWorkspace.find((w) => w.id === workspaceId);
+        await window.chatHub.tambahPengingat({
+            workspaceId,
+            workspaceNama: ws ? ws.nama : workspaceId,
+            waktuIso: new Date(waktuInput).toISOString(),
+            catatan,
+        });
+        document.getElementById('pengingat-catatan').value = '';
+        renderPengingat();
+        toast('Pengingat ditambahkan.', 'sukses');
+    });
+
+    // --- Jangan Ganggu ---
+    async function renderDnd() {
+        const konfig = await window.chatHub.muatDnd();
+        document.getElementById('dnd-aktif').checked = konfig.aktif;
+        document.getElementById('dnd-mulai').value = konfig.mulai;
+        document.getElementById('dnd-selesai').value = konfig.selesai;
+
+        const listEl = document.getElementById('dnd-platform-list');
+        listEl.innerHTML = ['whatsapp', 'shopee', 'tokped', 'lainnya'].map((p) => {
+            const label = { whatsapp: 'WhatsApp', shopee: 'Shopee', tokped: 'Tokopedia/TikTok', lainnya: 'Lainnya (Live Chat Webstore, dll)' }[p];
+            const dicentang = konfig.platformDibungkam.includes(p) ? 'checked' : '';
+            return `<label style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+                <input type="checkbox" value="${p}" ${dicentang} style="width:auto;margin:0;"> ${label}
+            </label>`;
+        }).join('');
+    }
+
+    document.getElementById('btn-simpan-dnd').addEventListener('click', async () => {
+        const platformDibungkam = Array.from(document.querySelectorAll('#dnd-platform-list input:checked')).map((c) => c.value);
+        await window.chatHub.simpanDnd({
+            aktif: document.getElementById('dnd-aktif').checked,
+            mulai: document.getElementById('dnd-mulai').value.trim() || '20:00',
+            selesai: document.getElementById('dnd-selesai').value.trim() || '08:00',
+            platformDibungkam,
+        });
+        toast('Pengaturan Jangan Ganggu disimpan.', 'sukses');
+    });
+
     // Suara notifikasi bawaan Windows (sudah legal terpasang di komputer, BUKAN suara asli
     // WhatsApp/Shopee/Tokped yang berhak cipta) — beda file per platform supaya bisa
     // dibedakan dari BUNYI-nya tanpa lihat layar.
@@ -690,12 +947,16 @@
         });
     }
 
-    window.chatHub.onNotifPesanBaru(({ workspaceId, platform, jumlah }) => {
+    window.chatHub.onNotifPesanBaru(async ({ workspaceId, platform, jumlah }) => {
         const badge = document.getElementById('badge-' + workspaceId);
         if (badge) {
             badge.textContent = jumlah > 9 ? '9+' : jumlah;
             badge.classList.add('tampil');
         }
+        // Badge TETAP muncul walau lagi jam Jangan Ganggu (biar tidak kelewat kalau dibuka
+        // manual) — cuma suara & toast-nya yang dibungkam.
+        const dibungkam = await window.chatHub.cekDnd(platform);
+        if (dibungkam) return;
         putarNotif(platform);
         tampilkanToast(workspaceId, jumlah);
     });
@@ -709,6 +970,11 @@
         const notif = new Notification(nama, { body: `${jumlah} pesan baru`, silent: true });
         notif.onclick = () => window.chatHub.pilihWorkspace(workspaceId);
     }
+
+    window.chatHub.onStatusKoneksiTab(({ workspaceId, status }) => {
+        const titik = document.getElementById('terputus-' + workspaceId);
+        if (titik) titik.classList.toggle('tampil', status !== 'terhubung');
+    });
 
     window.chatHub.onNotifBersih((workspaceId) => {
         const badge = document.getElementById('badge-' + workspaceId);

@@ -13,6 +13,7 @@ const autoreply = require('./autoreply');
 const followup = require('./followup');
 const broadcastRemote = require('./broadcastRemote');
 const pantauChatWa = require('./pantauChatWa');
+const alatBantu = require('./alatBantu');
 const { autoUpdater } = require('electron-updater');
 
 // Cegah lebih dari 1 instance jalan bersamaan — tanpa ini, tiap instance baru buka BrowserView
@@ -582,6 +583,8 @@ function mulaiSetelahLogin() {
     // monitoring HP owner (lihat ChatHubStatusController & CekChatLamaDibalas di Laravel).
     setTimeout(() => laporStatusChatHub().catch(() => {}), 20 * 1000);
     setInterval(() => laporStatusChatHub().catch(() => {}), JEDA_LAPOR_STATUS_MS);
+
+    mulaiPemantauPengingat();
 }
 
 const JEDA_LAPOR_STATUS_MS = 30 * 1000;
@@ -590,9 +593,6 @@ const JEDA_LAPOR_STATUS_MS = 30 * 1000;
  * kirim ke server. Gagal kirim (jaringan dll) dibiarkan saja — dicoba lagi interval berikutnya,
  * bukan error yang menghentikan aplikasi. */
 async function laporStatusChatHub() {
-    const token = muatTokenChatHub();
-    if (!token) return;
-
     const koneksi = [];
     const belumDibalas = [];
 
@@ -610,17 +610,45 @@ async function laporStatusChatHub() {
             jumlah_belum_dibaca: judulTerakhir[ws.id] || 0,
         });
 
+        // Ditampilkan LOKAL di sidebar (tanda merah "perlu login ulang") TERLEPAS dari
+        // apakah login POS Chat/lapor ke server berhasil — supaya tetap kelihatan walau
+        // offline atau belum sempat login akun POS Chat.
+        mainWindow?.webContents.send('status-koneksi-tab', { workspaceId: ws.id, status });
+
         if (platform === 'whatsapp' && status === 'terhubung') {
             const daftar = await pantauChatWa.bacaBelumDibalasWa(view);
             daftar.forEach((d) => belumDibalas.push({ workspace_id: ws.id, ...d }));
         }
     }
 
+    const token = muatTokenChatHub();
+    if (!token) return;
+
     const cfg = muatConfig();
     await requestJson('POST', `${cfg.apiBaseUrl}/api/chathub/lapor-status`, {
         Authorization: `Bearer ${token}`,
         Accept: 'application/json',
     }, { koneksi, belum_dibalas: belumDibalas });
+}
+
+/** Cek pengingat follow-up yang sudah jatuh tempo tiap 30 detik — munculkan sebagai
+ * notifikasi Windows (bukan dialog modal, supaya tidak mengganggu kalau lagi sibuk balas chat). */
+function mulaiPemantauPengingat() {
+    const { Notification } = require('electron');
+    setInterval(() => {
+        const jatuhTempo = alatBantu.ambilPengingatJatuhTempo();
+        jatuhTempo.forEach((p) => {
+            const notif = new Notification({
+                title: 'Pengingat follow up: ' + p.workspaceNama,
+                body: p.catatan || 'Waktunya follow up sekarang.',
+            });
+            notif.on('click', () => {
+                mainWindow?.show();
+                tampilkanWorkspace(p.workspaceId);
+            });
+            notif.show();
+        });
+    }, 30 * 1000);
 }
 
 /** Login manual dari layar login (dipanggil renderer lewat window.chatHub.loginChatHub). */
@@ -866,6 +894,21 @@ ipcMain.on('broadcast-berhenti', () => {
 ipcMain.handle('broadcast-logout', async () => {
     await broadcast.logout();
 });
+
+// --- Balasan cepat (copy-paste manual, bukan dikirim otomatis) ---
+ipcMain.handle('balasan-cepat-daftar', () => alatBantu.muatBalasanCepat());
+ipcMain.handle('balasan-cepat-tambah', (event, teks) => alatBantu.tambahBalasanCepat(teks));
+ipcMain.handle('balasan-cepat-hapus', (event, id) => alatBantu.hapusBalasanCepat(id));
+
+// --- Pengingat follow-up per tab ---
+ipcMain.handle('pengingat-daftar', () => alatBantu.muatPengingat());
+ipcMain.handle('pengingat-tambah', (event, data) => alatBantu.tambahPengingat(data));
+ipcMain.handle('pengingat-hapus', (event, id) => alatBantu.hapusPengingat(id));
+
+// --- Mode Jangan Ganggu terjadwal ---
+ipcMain.handle('dnd-muat', () => alatBantu.muatDnd());
+ipcMain.handle('dnd-simpan', (event, konfig) => alatBantu.simpanDnd(konfig));
+ipcMain.handle('dnd-cek', (event, platform) => alatBantu.dalamJamDnd(alatBantu.muatDnd(), platform));
 
 ipcMain.handle('kontak-daftar', () => kontak.muatSemua());
 
