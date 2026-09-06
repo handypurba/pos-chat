@@ -246,6 +246,26 @@ function simpanNamaOverride(peta) {
     fs.writeFileSync(FILE_NAMA_WORKSPACE(), JSON.stringify(peta, null, 2));
 }
 
+/** Sama seperti nama override di atas, tapi untuk URL -- dipakai buat "Edit URL" tab (6 Sep
+ * 2026, diminta owner). Sebelumnya satu-satunya cara ganti URL tab bawaan (mis. kalau URL Leads
+ * di workspaces.json berubah) adalah hapus tab lalu tambah baru sebagai tab custom -- sekarang
+ * bisa langsung edit URL tab MANA PUN (bawaan atau custom) tanpa hapus. */
+const FILE_URL_WORKSPACE = () => path.join(app.getPath('userData'), 'workspace-url.json');
+
+function muatUrlOverride() {
+    const file = FILE_URL_WORKSPACE();
+    if (!fs.existsSync(file)) return {};
+    try {
+        return JSON.parse(fs.readFileSync(file, 'utf-8'));
+    } catch {
+        return {};
+    }
+}
+
+function simpanUrlOverride(peta) {
+    fs.writeFileSync(FILE_URL_WORKSPACE(), JSON.stringify(peta, null, 2));
+}
+
 /** Urutan sidebar hasil drag-and-drop — disimpan terpisah juga (array id, urutan dari atas ke
  * bawah). Workspace baru yang belum pernah ada di urutan tersimpan (misalnya nanti nambah
  * workspace lagi) otomatis ditaruh di akhir, bukan hilang. */
@@ -318,8 +338,10 @@ function muatWorkspaces() {
     workspaces = [...bawaan, ...tambahan].filter((ws) => !terhapus.has(ws.id));
 
     const namaOverride = muatNamaOverride();
+    const urlOverride = muatUrlOverride();
     workspaces.forEach((ws) => {
         if (namaOverride[ws.id]) ws.nama = namaOverride[ws.id];
+        if (urlOverride[ws.id]) ws.url = urlOverride[ws.id];
     });
 
     const urutanId = muatUrutanOverride();
@@ -356,6 +378,31 @@ ipcMain.handle('workspace-rename', (event, { id, namaBaru }) => {
     const namaOverride = muatNamaOverride();
     namaOverride[id] = namaBersih;
     simpanNamaOverride(namaOverride);
+
+    mainWindow?.webContents.send('daftar-workspace', workspaces);
+    return { berhasil: true };
+});
+
+/** Edit URL tab MANA PUN (bawaan dari workspaces.json ataupun custom) tanpa perlu hapus-tambah
+ * ulang -- diminta owner 6 Sep 2026, kejadian nyata: tab "Leads" custom yang dibuat sebelum
+ * "?embed=1" ditambahkan ke workspaces.json jadi menampilkan sidebar Hanmar POS penuh, harus
+ * diperbaiki manual di tiap laptop. Cuma untuk tab web (WA/Shopee/Tokped/custom), bukan tab
+ * "Broadcast WA" (tidak punya URL). Langsung reload isi tab-nya juga (loadURL), tidak perlu
+ * restart aplikasi. */
+ipcMain.handle('workspace-edit-url', (event, { id, urlBaru }) => {
+    const bersih = (urlBaru || '').trim();
+    if (!/^https?:\/\//.test(bersih)) return { berhasil: false, alasan: 'URL harus diawali http:// atau https://' };
+
+    const ws = workspaces.find((w) => w.id === id);
+    if (!ws) return { berhasil: false, alasan: 'Workspace tidak ditemukan' };
+    if (ws.tipe !== 'web') return { berhasil: false, alasan: 'Tab ini tidak punya URL' };
+
+    ws.url = bersih;
+    const urlOverride = muatUrlOverride();
+    urlOverride[id] = bersih;
+    simpanUrlOverride(urlOverride);
+
+    views[id]?.webContents.loadURL(bersih);
 
     mainWindow?.webContents.send('daftar-workspace', workspaces);
     return { berhasil: true };
@@ -461,6 +508,14 @@ function aturUkuranView(view) {
     const { width, height } = mainWindow.getContentBounds();
     view.setBounds({ x: SIDEBAR_WIDTH, y: 0, width: width - SIDEBAR_WIDTH, height });
     view.setAutoResize({ width: true, height: true });
+}
+
+/** Cari tab "Leads" (dicari dari NAMA tab, bukan id -- id tab custom bisa beda-beda antar
+ * laptop, lihat catatan di workspace-tambahan) lalu pindahkan ke situ. Aman kalau tab-nya
+ * dihapus/belum ada (tidak ngapa-ngapain). */
+function bukaTabLeadsOtomatis() {
+    const tabLeads = workspaces.find((w) => w.tipe === 'web' && w.nama.toLowerCase().includes('leads'));
+    if (tabLeads) tampilkanWorkspace(tabLeads.id);
 }
 
 function tampilkanWorkspace(id) {
@@ -583,6 +638,12 @@ function mulaiSetelahLogin() {
     // monitoring HP owner (lihat ChatHubStatusController & CekChatLamaDibalas di Laravel).
     setTimeout(() => laporStatusChatHub().catch(() => {}), 20 * 1000);
     setInterval(() => laporStatusChatHub().catch(() => {}), JEDA_LAPOR_STATUS_MS);
+
+    // Otomatis buka tab "Leads" tiap 5 menit -- diminta owner 7 Sep 2026, supaya admin selalu
+    // kepancing lihat papan Leads & pindahkan kartu sesuai progres, bukan cuma dibuka manual
+    // kalau ingat. Sengaja pindah tab beneran (bukan cuma notifikasi) -- efek sampingnya tab yang
+    // lagi aktif bisa "kepindah" tiap 5 menit walau admin lagi baca chat lain, itu disengaja.
+    setInterval(() => bukaTabLeadsOtomatis(), 5 * 60 * 1000);
 
     mulaiPemantauPengingat();
 }
