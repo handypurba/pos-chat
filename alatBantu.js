@@ -5,6 +5,7 @@ const { app } = require('electron');
 const FILE_BALASAN_CEPAT = () => path.join(app.getPath('userData'), 'balasan-cepat.json');
 const FILE_PENGINGAT = () => path.join(app.getPath('userData'), 'pengingat-followup.json');
 const FILE_DND = () => path.join(app.getPath('userData'), 'jangan-ganggu.json');
+const FILE_PERANGKAT = () => path.join(app.getPath('userData'), 'nama-perangkat.json');
 
 function bacaJson(file, bawaan) {
     if (!fs.existsSync(file)) return bawaan;
@@ -102,8 +103,23 @@ function dalamJamDnd(konfig, platform) {
     return menitSekarang >= mulai && menitSekarang < selesai;
 }
 
+// --- Nama Perangkat: label bebas diisi manual sekali per laptop (mis. "Laptop Andhika"),
+// dikirim tiap lapor status ke server (lihat laporStatusChatHub di main.js) supaya status
+// koneksi & progres WA bisa dipisah per laptop di halaman Leads Hanmar POS -- perlu ini karena
+// beberapa laptop bisa sama-sama punya tab dengan id sama (mis. sama-sama "whatsapp"). ---
+function muatNamaPerangkat() {
+    return bacaJson(FILE_PERANGKAT(), { nama: '' }).nama || '';
+}
+
+function simpanNamaPerangkat(nama) {
+    const bersih = String(nama || '').trim().slice(0, 100);
+    tulisJson(FILE_PERANGKAT(), { nama: bersih });
+    return bersih;
+}
+
 module.exports = {
     muatBalasanCepat, tambahBalasanCepat, hapusBalasanCepat,
     muatPengingat, tambahPengingat, hapusPengingat, ambilPengingatJatuhTempo,
     muatDnd, simpanDnd, dalamJamDnd,
+    muatNamaPerangkat, simpanNamaPerangkat,
 };

@@ -628,7 +628,7 @@ async function laporStatusChatHub() {
     await requestJson('POST', `${cfg.apiBaseUrl}/api/chathub/lapor-status`, {
         Authorization: `Bearer ${token}`,
         Accept: 'application/json',
-    }, { koneksi, belum_dibalas: belumDibalas });
+    }, { perangkat: alatBantu.muatNamaPerangkat(), koneksi, belum_dibalas: belumDibalas });
 }
 
 /** Cek pengingat follow-up yang sudah jatuh tempo tiap 30 detik — munculkan sebagai
@@ -909,6 +909,10 @@ ipcMain.handle('pengingat-hapus', (event, id) => alatBantu.hapusPengingat(id));
 ipcMain.handle('dnd-muat', () => alatBantu.muatDnd());
 ipcMain.handle('dnd-simpan', (event, konfig) => alatBantu.simpanDnd(konfig));
 ipcMain.handle('dnd-cek', (event, platform) => alatBantu.dalamJamDnd(alatBantu.muatDnd(), platform));
+
+// --- Nama Perangkat (label laptop, dikirim tiap lapor status -- lihat laporStatusChatHub) ---
+ipcMain.handle('perangkat-muat', () => alatBantu.muatNamaPerangkat());
+ipcMain.handle('perangkat-simpan', (event, nama) => alatBantu.simpanNamaPerangkat(nama));
 
 ipcMain.handle('kontak-daftar', () => kontak.muatSemua());
 

@@ -24,6 +24,9 @@ contextBridge.exposeInMainWorld('chatHub', {
     muatDnd: () => ipcRenderer.invoke('dnd-muat'),
     simpanDnd: (konfig) => ipcRenderer.invoke('dnd-simpan', konfig),
     cekDnd: (platform) => ipcRenderer.invoke('dnd-cek', platform),
+
+    muatNamaPerangkat: () => ipcRenderer.invoke('perangkat-muat'),
+    simpanNamaPerangkat: (nama) => ipcRenderer.invoke('perangkat-simpan', nama),
     renameWorkspace: (id, namaBaru) => ipcRenderer.invoke('workspace-rename', { id, namaBaru }),
     reorderWorkspace: (urutanId) => ipcRenderer.invoke('workspace-reorder', urutanId),
     reloadWorkspace: (id) => ipcRenderer.send('workspace-reload', id),

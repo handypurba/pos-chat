@@ -250,6 +250,7 @@
             <button data-tab="balasan" class="aktif">Balasan Cepat</button>
             <button data-tab="pengingat">Pengingat</button>
             <button data-tab="dnd">Jangan Ganggu</button>
+            <button data-tab="perangkat">Perangkat</button>
         </div>
 
         <div class="isi-tab">
@@ -290,6 +291,17 @@
                 <label style="font-size:11px;color:#6b7280;">Bungkam suara/toast utk channel:</label>
                 <div id="dnd-platform-list" style="font-size:12px;margin-bottom:10px;"></div>
                 <button class="aksi kecil" id="btn-simpan-dnd" style="width:100%;">Simpan Pengaturan</button>
+            </div>
+
+            <!-- Perangkat -->
+            <div class="isi-tab-panel" id="panel-perangkat">
+                <p style="font-size:11px;color:#6b7280;margin-bottom:10px;">
+                    Isi nama laptop/admin ini (mis. "Laptop Andhika") supaya status koneksi & progres
+                    WA di halaman Leads Hanmar POS bisa dibedakan per laptop. Boleh diganti kapan saja.
+                </p>
+                <label style="font-size:11px;color:#6b7280;">Nama Laptop/Perangkat</label>
+                <input type="text" id="input-nama-perangkat" placeholder="mis. Laptop Andhika" maxlength="100">
+                <button class="aksi kecil" id="btn-simpan-perangkat" style="width:100%;">Simpan</button>
             </div>
         </div>
 
@@ -767,7 +779,7 @@
     async function bukaModalAlatBantu() {
         window.chatHub.sembunyikanViewModal();
         modalAlatBantuOverlay.classList.add('tampil');
-        await Promise.all([renderBalasanCepat(), renderPengingat(), renderDnd()]);
+        await Promise.all([renderBalasanCepat(), renderPengingat(), renderDnd(), renderPerangkat()]);
     }
 
     function tutupModalAlatBantu() {
@@ -904,6 +916,18 @@
             platformDibungkam,
         });
         toast('Pengaturan Jangan Ganggu disimpan.', 'sukses');
+    });
+
+    // --- Nama Perangkat (label laptop, dikirim ke server tiap lapor status) ---
+    async function renderPerangkat() {
+        document.getElementById('input-nama-perangkat').value = await window.chatHub.muatNamaPerangkat();
+    }
+
+    document.getElementById('btn-simpan-perangkat').addEventListener('click', async () => {
+        const nama = document.getElementById('input-nama-perangkat').value.trim();
+        const tersimpan = await window.chatHub.simpanNamaPerangkat(nama);
+        document.getElementById('input-nama-perangkat').value = tersimpan;
+        toast(tersimpan ? `Nama perangkat disimpan: "${tersimpan}".` : 'Nama perangkat dikosongkan.', 'sukses');
     });
 
     // Suara notifikasi bawaan Windows (sudah legal terpasang di komputer, BUKAN suara asli
