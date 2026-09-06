@@ -622,7 +622,7 @@ async function laporStatusChatHub() {
             const daftar = await pantauChatWa.bacaBelumDibalasShopee(view);
             daftar.forEach((d) => belumDibalas.push({ workspace_id: ws.id, ...d }));
         } else if (platform === 'tokped' && status === 'terhubung') {
-            const daftar = await pantauChatWa.bacaBelumDibalasTokped(view);
+            const daftar = await pantauChatWa.bacaBelumDibalasTokped(view, ws.id);
             daftar.forEach((d) => belumDibalas.push({ workspace_id: ws.id, ...d }));
         }
     }

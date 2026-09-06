@@ -261,15 +261,30 @@ function waktuMentahTokpedKeAbsolut(waktuMentah) {
     return hasil;
 }
 
+// Chat Tokped/TikTok jarang ada dibanding WA -- klik-pindah folder tiap 30 detik (jeda lapor
+// status biasa) kerasa berlebihan & bikin sidebar "berkedip" terlalu sering kalau admin pas
+// pakai tab itu. Owner minta dijarangkan jadi tiap 5 menit (6 Sep 2026). Hasil terakhir per tab
+// disimpan di cache ini supaya laporan status TETAP jalan tiap 30 detik seperti biasa (pakai
+// data cache) -- yang dijarangkan cuma acara klik-folder-nya sendiri.
+const CACHE_BELUM_DIBALAS_TOKPED = new Map(); // workspaceId -> { diperiksaPada, hasil }
+const JEDA_CEK_TOKPED_MS = 5 * 60 * 1000;
+
 /** Baca daftar kontak yang belum dibalas dari 1 tab Tokped/TikTok Seller Center -- klik folder
  * "Belum dibalas" dulu (satu-satunya cara tahu status ini di Tokped, lihat catatan di atas),
- * baca isinya, lalu klik balik ke folder semula secepatnya. */
-async function bacaBelumDibalasTokped(view) {
+ * baca isinya, lalu klik balik ke folder semula secepatnya. Di-throttle per workspaceId (lihat
+ * cache di atas), TIDAK jalan tiap kali dipanggil. */
+async function bacaBelumDibalasTokped(view, workspaceId) {
+    const cache = CACHE_BELUM_DIBALAS_TOKPED.get(workspaceId);
+    const sekarang = Date.now();
+    if (cache && (sekarang - cache.diperiksaPada) < JEDA_CEK_TOKPED_MS) {
+        return cache.hasil;
+    }
+
     try {
         const adaTombol = await view.webContents.executeJavaScript(
             `!!document.querySelector('${SELECTOR_FOLDER_BELUM_DIBALAS_TOKPED}')`
         );
-        if (!adaTombol) return [];
+        if (!adaTombol) return cache ? cache.hasil : [];
 
         const semulaUid = await view.webContents.executeJavaScript(`
             (function () {
@@ -309,9 +324,12 @@ async function bacaBelumDibalasTokped(view) {
             });
         }
 
+        CACHE_BELUM_DIBALAS_TOKPED.set(workspaceId, { diperiksaPada: sekarang, hasil });
         return hasil;
     } catch {
-        return [];
+        // Gagal baca (mis. lagi loading) -- pakai cache lama daripada dianggap kosong, supaya
+        // status "belum dibalas" tidak hilang gara-gara 1x gagal.
+        return cache ? cache.hasil : [];
     }
 }
 
