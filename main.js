@@ -618,6 +618,12 @@ async function laporStatusChatHub() {
         if (platform === 'whatsapp' && status === 'terhubung') {
             const daftar = await pantauChatWa.bacaBelumDibalasWa(view);
             daftar.forEach((d) => belumDibalas.push({ workspace_id: ws.id, ...d }));
+        } else if (platform === 'shopee' && status === 'terhubung') {
+            const daftar = await pantauChatWa.bacaBelumDibalasShopee(view);
+            daftar.forEach((d) => belumDibalas.push({ workspace_id: ws.id, ...d }));
+        } else if (platform === 'tokped' && status === 'terhubung') {
+            const daftar = await pantauChatWa.bacaBelumDibalasTokped(view);
+            daftar.forEach((d) => belumDibalas.push({ workspace_id: ws.id, ...d }));
         }
     }
 
