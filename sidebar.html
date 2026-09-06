@@ -701,6 +701,22 @@
                 tutupMenuKonteks();
             });
             menu.appendChild(reload);
+
+            // Edit URL -- diminta owner 7 Sep 2026, supaya kalau ada tab yang URL-nya keliru
+            // (mis. lupa "?embed=1" buat halaman Hanmar POS) bisa diperbaiki langsung tanpa
+            // hapus-tambah ulang tab-nya (dulu satu-satunya cara).
+            const editUrl = document.createElement('div');
+            editUrl.className = 'item';
+            editUrl.textContent = 'Edit URL';
+            editUrl.addEventListener('click', async () => {
+                tutupMenuKonteks();
+                const urlBaru = prompt(`URL baru untuk tab "${ws.nama}":`, ws.url || '');
+                if (urlBaru === null || urlBaru.trim() === '') return;
+                const hasil = await window.chatHub.editWorkspaceUrl(ws.id, urlBaru.trim());
+                if (!hasil.berhasil) toast(hasil.alasan || 'Gagal ubah URL.', 'gagal');
+                else toast(`URL tab "${ws.nama}" diperbarui.`, 'sukses');
+            });
+            menu.appendChild(editUrl);
         }
 
         if (ws.tipe !== 'broadcast') {
