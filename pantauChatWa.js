@@ -65,14 +65,25 @@ function analisisBarisWa(potongan) {
     return { nama: namaBersih(nama), waktuMentah, sudahDibalas, pesanCuplikan };
 }
 
-/** Kalau 1 nomor tersimpan sebagai beberapa kontak berbeda di HP, WhatsApp Web menampilkan
- * SEMUA nama itu digabung dipisah koma (mis. "TARI PT ALSINDO, Putri Cust Baru, Aris Cust Jl.")
- * -- diminta owner 7 Sep 2026: ambil nama TERAKHIR saja (yang paling baru disimpan), jangan
- * digabung semua supaya kartu Leads tidak berantakan. */
+// Kalau nama koma cuma dikit bagiannya (2-3), kemungkinan besar itu nama toko + alamat yang
+// SENGAJA ditulis pakai koma (mis. "ANZ STORE Jl. Rw. Bening, Sidomulyo Bar.") -- BUKAN kontak
+// dobel. Ambil "bagian terakhir" di kasus itu malah menghilangkan nama tokonya. Pola nyata
+// kontak dobel (banyak nama beda disimpan buat 1 nomor) selalu 4+ bagian. Ditemukan owner
+// 7 Sep 2026 setelah command pembersih data lama sempat salah proses nama+alamat.
+const AMBANG_BAGIAN_NAMA_GABUNGAN = 4;
+
+/** Kalau 1 nomor tersimpan sebagai BANYAK kontak berbeda di HP, WhatsApp Web menampilkan
+ * SEMUA nama itu digabung dipisah koma (mis. "TARI PT ALSINDO, Putri Cust Baru, Aris Cust Jl.,
+ * Cust Baru, Aling Diana, Prima") -- diminta owner 7 Sep 2026: ambil nama TERAKHIR saja (yang
+ * paling baru disimpan), jangan digabung semua supaya kartu Leads tidak berantakan. Cuma
+ * berlaku kalau bagiannya 4+ (lihat AMBANG_BAGIAN_NAMA_GABUNGAN) -- yang lebih sedikit
+ * dibiarkan apa adanya (kemungkinan nama+alamat biasa). */
 function namaBersih(nama) {
     if (!nama || !nama.includes(',')) return nama;
 
     const bagian = nama.split(',').map((s) => s.trim()).filter(Boolean);
+
+    if (bagian.length < AMBANG_BAGIAN_NAMA_GABUNGAN) return nama;
 
     return bagian.length ? bagian[bagian.length - 1] : nama;
 }
