@@ -117,9 +117,29 @@ function simpanNamaPerangkat(nama) {
     return bersih;
 }
 
+// --- Jeda auto-buka tab Leads: diminta owner 7 Sep 2026 supaya bisa diubah dari aplikasi (tab
+// Perangkat), tidak perlu build ulang tiap mau ganti angkanya. Dibaca ULANG tiap siklus (lihat
+// jadwalkanBukaTabLeads di main.js, pola setTimeout rekursif bukan setInterval tetap) supaya
+// perubahan langsung kepakai di siklus berikutnya, tidak perlu restart aplikasi. Default 5 menit,
+// dibatasi 1-120 menit (jaga-jaga salah ketik, mis. ke-isi 0 atau angka ekstrem). ---
+const FILE_JEDA_TAB_LEADS = () => path.join(app.getPath('userData'), 'jeda-tab-leads.json');
+const JEDA_TAB_LEADS_MENIT_DEFAULT = 5;
+
+function muatJedaTabLeadsMenit() {
+    const menit = bacaJson(FILE_JEDA_TAB_LEADS(), { menit: JEDA_TAB_LEADS_MENIT_DEFAULT }).menit;
+    return Number.isFinite(menit) && menit >= 1 && menit <= 120 ? menit : JEDA_TAB_LEADS_MENIT_DEFAULT;
+}
+
+function simpanJedaTabLeadsMenit(menit) {
+    const bersih = Math.min(120, Math.max(1, Math.round(Number(menit)) || JEDA_TAB_LEADS_MENIT_DEFAULT));
+    tulisJson(FILE_JEDA_TAB_LEADS(), { menit: bersih });
+    return bersih;
+}
+
 module.exports = {
     muatBalasanCepat, tambahBalasanCepat, hapusBalasanCepat,
     muatPengingat, tambahPengingat, hapusPengingat, ambilPengingatJatuhTempo,
     muatDnd, simpanDnd, dalamJamDnd,
     muatNamaPerangkat, simpanNamaPerangkat,
+    muatJedaTabLeadsMenit, simpanJedaTabLeadsMenit,
 };

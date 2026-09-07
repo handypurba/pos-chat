@@ -518,6 +518,17 @@ function bukaTabLeadsOtomatis() {
     if (tabLeads) tampilkanWorkspace(tabLeads.id);
 }
 
+/** Jadwalkan bukaTabLeadsOtomatis() berikutnya, baca jeda TERBARU dari alatBantu tiap kali --
+ * jadi kalau owner ganti angkanya di Alat Bantu > Perangkat, langsung kepakai di siklus
+ * berikutnya tanpa perlu restart aplikasi (beda dari setInterval yang jedanya "beku" sejak
+ * pertama dipasang). */
+function jadwalkanBukaTabLeads() {
+    setTimeout(() => {
+        bukaTabLeadsOtomatis();
+        jadwalkanBukaTabLeads();
+    }, alatBantu.muatJedaTabLeadsMenit() * 60 * 1000);
+}
+
 function tampilkanWorkspace(id) {
     const ws = workspaces.find((w) => w.id === id);
     if (!ws) return;
@@ -639,11 +650,14 @@ function mulaiSetelahLogin() {
     setTimeout(() => laporStatusChatHub().catch(() => {}), 20 * 1000);
     setInterval(() => laporStatusChatHub().catch(() => {}), JEDA_LAPOR_STATUS_MS);
 
-    // Otomatis buka tab "Leads" tiap 5 menit -- diminta owner 7 Sep 2026, supaya admin selalu
-    // kepancing lihat papan Leads & pindahkan kartu sesuai progres, bukan cuma dibuka manual
-    // kalau ingat. Sengaja pindah tab beneran (bukan cuma notifikasi) -- efek sampingnya tab yang
-    // lagi aktif bisa "kepindah" tiap 5 menit walau admin lagi baca chat lain, itu disengaja.
-    setInterval(() => bukaTabLeadsOtomatis(), 5 * 60 * 1000);
+    // Otomatis buka tab "Leads" tiap sekian menit (diatur di Alat Bantu > Perangkat, default 5
+    // menit) -- diminta owner 7 Sep 2026, supaya admin selalu kepancing lihat papan Leads &
+    // pindahkan kartu sesuai progres, bukan cuma dibuka manual kalau ingat. Sengaja pindah tab
+    // beneran (bukan cuma notifikasi) -- efek sampingnya tab yang lagi aktif bisa "kepindah"
+    // tiap siklus walau admin lagi baca chat lain, itu disengaja. Pola setTimeout REKURSIF
+    // (bukan setInterval tetap) supaya kalau angkanya diubah dari Alat Bantu, langsung kepakai
+    // di siklus berikutnya tanpa perlu restart aplikasi.
+    jadwalkanBukaTabLeads();
 
     mulaiPemantauPengingat();
 }
@@ -980,6 +994,10 @@ ipcMain.handle('dnd-cek', (event, platform) => alatBantu.dalamJamDnd(alatBantu.m
 // --- Nama Perangkat (label laptop, dikirim tiap lapor status -- lihat laporStatusChatHub) ---
 ipcMain.handle('perangkat-muat', () => alatBantu.muatNamaPerangkat());
 ipcMain.handle('perangkat-simpan', (event, nama) => alatBantu.simpanNamaPerangkat(nama));
+
+// --- Jeda auto-buka tab Leads (menit) -- lihat jadwalkanBukaTabLeads() ---
+ipcMain.handle('jeda-tab-leads-muat', () => alatBantu.muatJedaTabLeadsMenit());
+ipcMain.handle('jeda-tab-leads-simpan', (event, menit) => alatBantu.simpanJedaTabLeadsMenit(menit));
 
 ipcMain.handle('kontak-daftar', () => kontak.muatSemua());
 

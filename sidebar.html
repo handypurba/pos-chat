@@ -301,7 +301,14 @@
                 </p>
                 <label style="font-size:11px;color:#6b7280;">Nama Laptop/Perangkat</label>
                 <input type="text" id="input-nama-perangkat" placeholder="mis. Laptop Andhika" maxlength="100">
-                <button class="aksi kecil" id="btn-simpan-perangkat" style="width:100%;">Simpan</button>
+                <button class="aksi kecil" id="btn-simpan-perangkat" style="width:100%;margin-bottom:14px;">Simpan</button>
+
+                <p style="font-size:11px;color:#6b7280;margin-bottom:10px;">
+                    Tiap berapa menit aplikasi otomatis pindah ke tab "Leads" (biar admin selalu kepancing lihat & update papan Leads).
+                </p>
+                <label style="font-size:11px;color:#6b7280;">Jeda Auto-Buka Tab Leads (menit)</label>
+                <input type="number" id="input-jeda-tab-leads" min="1" max="120" placeholder="5">
+                <button class="aksi kecil" id="btn-simpan-jeda-tab-leads" style="width:100%;">Simpan</button>
             </div>
         </div>
 
@@ -795,7 +802,7 @@
     async function bukaModalAlatBantu() {
         window.chatHub.sembunyikanViewModal();
         modalAlatBantuOverlay.classList.add('tampil');
-        await Promise.all([renderBalasanCepat(), renderPengingat(), renderDnd(), renderPerangkat()]);
+        await Promise.all([renderBalasanCepat(), renderPengingat(), renderDnd(), renderPerangkat(), renderJedaTabLeads()]);
     }
 
     function tutupModalAlatBantu() {
@@ -944,6 +951,18 @@
         const tersimpan = await window.chatHub.simpanNamaPerangkat(nama);
         document.getElementById('input-nama-perangkat').value = tersimpan;
         toast(tersimpan ? `Nama perangkat disimpan: "${tersimpan}".` : 'Nama perangkat dikosongkan.', 'sukses');
+    });
+
+    // --- Jeda auto-buka tab Leads ---
+    async function renderJedaTabLeads() {
+        document.getElementById('input-jeda-tab-leads').value = await window.chatHub.muatJedaTabLeads();
+    }
+
+    document.getElementById('btn-simpan-jeda-tab-leads').addEventListener('click', async () => {
+        const menit = document.getElementById('input-jeda-tab-leads').value;
+        const tersimpan = await window.chatHub.simpanJedaTabLeads(menit);
+        document.getElementById('input-jeda-tab-leads').value = tersimpan;
+        toast(`Auto-buka tab Leads sekarang tiap ${tersimpan} menit.`, 'sukses');
     });
 
     // Suara notifikasi bawaan Windows (sudah legal terpasang di komputer, BUKAN suara asli

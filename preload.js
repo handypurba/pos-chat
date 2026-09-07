@@ -27,6 +27,8 @@ contextBridge.exposeInMainWorld('chatHub', {
 
     muatNamaPerangkat: () => ipcRenderer.invoke('perangkat-muat'),
     simpanNamaPerangkat: (nama) => ipcRenderer.invoke('perangkat-simpan', nama),
+    muatJedaTabLeads: () => ipcRenderer.invoke('jeda-tab-leads-muat'),
+    simpanJedaTabLeads: (menit) => ipcRenderer.invoke('jeda-tab-leads-simpan', menit),
     renameWorkspace: (id, namaBaru) => ipcRenderer.invoke('workspace-rename', { id, namaBaru }),
     editWorkspaceUrl: (id, urlBaru) => ipcRenderer.invoke('workspace-edit-url', { id, urlBaru }),
     reorderWorkspace: (urutanId) => ipcRenderer.invoke('workspace-reorder', urutanId),
