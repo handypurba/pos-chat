@@ -62,7 +62,19 @@ function analisisBarisWa(potongan) {
     );
     const pesanCuplikan = kandidatPesan.length ? kandidatPesan[kandidatPesan.length - 1].x : null;
 
-    return { nama, waktuMentah, sudahDibalas, pesanCuplikan };
+    return { nama: namaBersih(nama), waktuMentah, sudahDibalas, pesanCuplikan };
+}
+
+/** Kalau 1 nomor tersimpan sebagai beberapa kontak berbeda di HP, WhatsApp Web menampilkan
+ * SEMUA nama itu digabung dipisah koma (mis. "TARI PT ALSINDO, Putri Cust Baru, Aris Cust Jl.")
+ * -- diminta owner 7 Sep 2026: ambil nama TERAKHIR saja (yang paling baru disimpan), jangan
+ * digabung semua supaya kartu Leads tidak berantakan. */
+function namaBersih(nama) {
+    if (!nama || !nama.includes(',')) return nama;
+
+    const bagian = nama.split(',').map((s) => s.trim()).filter(Boolean);
+
+    return bagian.length ? bagian[bagian.length - 1] : nama;
 }
 
 /** Ubah label waktu WA ("10:42", "Kemarin", nama hari, dst) jadi Date perkiraan — dipakai server
