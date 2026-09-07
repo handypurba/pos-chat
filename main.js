@@ -425,6 +425,15 @@ function platformDari(wsId) {
 
 const judulTerakhir = {};
 
+// Kapan tiap tab web TERAKHIR selesai load/reload (did-finish-load) -- dipakai laporStatusChatHub()
+// buat kasih jeda "pemanasan" sebelum mulai percaya status "belum dibalas" tab itu. Ditemukan
+// owner 7 Sep 2026: begitu WA Web baru saja di-reload/reconnect, ikon centang/read di baris chat
+// belum sempat kebaca sempurna oleh pantauChatWa.js sesaat setelah halaman dimuat -- akibatnya
+// chat LAMA yang sebenarnya sudah dibalas sempat kebaca "belum dibalas" dan salah bikin Leads baru
+// (kejadian nyata: 5 leads muncul bersamaan tepat setelah tab Admin HF reconnect).
+const viewDimuatPada = {};
+const JEDA_PEMANASAN_SETELAH_LOAD_MS = 45 * 1000;
+
 /** Banyak web chat (WhatsApp Web, dkk) menaruh jumlah pesan belum dibaca di AWAL judul tab,
  * mis. "(3) WhatsApp" — pola ini dipakai luas jadi dijadikan patokan umum untuk 3 platform
  * sekaligus, tanpa perlu tahu detail tampilan situsnya. */
@@ -463,6 +472,14 @@ function buatView(ws) {
     view.webContents.setUserAgent(UA_CHROME);
     view.webContents.loadURL(ws.url);
     pantauJudul(ws, view);
+
+    // Catat tiap kali tab ini selesai load/reload -- dipakai laporStatusChatHub() buat jeda
+    // pemanasan (lihat JEDA_PEMANASAN_SETELAH_LOAD_MS di atas). did-finish-load ini juga otomatis
+    // ke-trigger ulang saat workspace-reload (view.webContents.reload()), jadi tidak perlu
+    // dipasang terpisah di situ.
+    view.webContents.on('did-finish-load', () => {
+        viewDimuatPada[ws.id] = Date.now();
+    });
 
     // Tokopedia (sekarang gabung Seller Center Tokopedia+TikTok Shop): buka langsung ke URL
     // chat spesifik (dengan oec_seller_id dkk) sering nyangkut layar putih di dalam embed —
@@ -690,7 +707,15 @@ async function laporStatusChatHub() {
         // offline atau belum sempat login akun POS Chat.
         mainWindow?.webContents.send('status-koneksi-tab', { workspaceId: ws.id, status });
 
-        if (platform === 'whatsapp' && status === 'terhubung') {
+        // Tab yang BARU SAJA selesai load/reload dilewati dulu (belum dianggap "belum dibalas"
+        // apa pun) sampai lewat masa pemanasan -- lihat catatan JEDA_PEMANASAN_SETELAH_LOAD_MS.
+        // Status koneksi di atas tetap dilaporkan seperti biasa, cuma daftar belum-dibalas yang
+        // ditahan supaya tidak salah bikin Leads baru dari chat lama yang sebenarnya sudah dibalas.
+        const baruSajaDimuat = Date.now() - (viewDimuatPada[ws.id] || 0) < JEDA_PEMANASAN_SETELAH_LOAD_MS;
+
+        if (baruSajaDimuat) {
+            // lewati pembacaan belum-dibalas untuk tab ini siklus ini
+        } else if (platform === 'whatsapp' && status === 'terhubung') {
             const daftar = await pantauChatWa.bacaBelumDibalasWa(view);
             daftar.forEach((d) => belumDibalas.push({ workspace_id: ws.id, ...d }));
         } else if (platform === 'shopee' && status === 'terhubung') {
