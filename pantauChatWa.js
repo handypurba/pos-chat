@@ -197,30 +197,47 @@ async function bacaBelumDibalasShopee(view) {
     }
 }
 
-/** Baca daftar kontak yang pesan terakhirnya belum dibalas dari 1 tab WhatsApp Web. */
+/** Baca SEMUA baris chat WA (1x eksekusi DOM), dipisah jadi dua daftar sekaligus supaya tidak
+ * baca DOM 2x tiap siklus:
+ * - belumDibalas: buat pengingat "sudah berapa menit belum dibalas" (PosChatPesanMasuk), TETAP
+ *   sama seperti sebelumnya, cuma kontak yang PAS SAAT INI belum dibalas.
+ * - kontakTerlihat: buat bikin Leads -- SEMUA nama kontak yang tampil di daftar chat, TERLEPAS
+ *   dari sudah/belum dibalas. Ditambahkan 8 Sep 2026 (diminta owner): sebelumnya Leads cuma
+ *   dibuat dari kontak yang KEBETULAN masih belum dibalas pas polling (tiap 30 detik) -- kalau
+ *   admin sempat balas LEBIH CEPAT dari itu, chatnya tidak pernah "tertangkap" sama sekali,
+ *   Lead tidak pernah kebuat. Baris chat tetap muncul di daftar cukup lama setelah dibalas
+ *   (tidak langsung hilang), jadi laporkan SEMUA nama supaya sistem tetap sempat mencatatnya di
+ *   polling berikutnya, seberapa pun cepatnya admin membalas. Server yang memutuskan aman/tidak
+ *   bikin Lead baru (kunci_dedup unik, aman dipanggil berkali-kali -- lihat
+ *   Lead::buatDariChatOtomatis()). */
 async function bacaBelumDibalasWa(view) {
     try {
         const mentah = await view.webContents.executeJavaScript(SKRIP_EKSTRAK_WA);
         const semuaBaris = JSON.parse(mentah);
-        const hasil = [];
+        const belumDibalas = [];
+        const kontakTerlihat = [];
 
         for (const baris of semuaBaris) {
             const info = analisisBarisWa(baris);
-            if (!info.nama || info.sudahDibalas || info.kemungkinanGrup) continue;
+            if (!info.nama || info.kemungkinanGrup) continue;
+
+            kontakTerlihat.push(info.nama);
+
+            if (info.sudahDibalas) continue;
 
             const waktuAbsolut = waktuMentahKeAbsolut(info.waktuMentah);
             if (!waktuAbsolut) continue;
 
-            hasil.push({
+            belumDibalas.push({
                 kontak_nama: info.nama,
                 pesan_cuplikan: info.pesanCuplikan,
                 waktu_pesan_masuk: waktuAbsolut.toISOString(),
             });
         }
 
-        return hasil;
+        return { belumDibalas, kontakTerlihat };
     } catch {
-        return [];
+        return { belumDibalas: [], kontakTerlihat: [] };
     }
 }
 

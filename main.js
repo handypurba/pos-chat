@@ -687,6 +687,7 @@ const JEDA_LAPOR_STATUS_MS = 30 * 1000;
 async function laporStatusChatHub() {
     const koneksi = [];
     const belumDibalas = [];
+    const kontakTerlihat = [];
 
     for (const ws of workspaces.filter((w) => w.tipe === 'web')) {
         const view = views[ws.id];
@@ -716,8 +717,9 @@ async function laporStatusChatHub() {
         if (baruSajaDimuat) {
             // lewati pembacaan belum-dibalas untuk tab ini siklus ini
         } else if (platform === 'whatsapp' && status === 'terhubung') {
-            const daftar = await pantauChatWa.bacaBelumDibalasWa(view);
+            const { belumDibalas: daftar, kontakTerlihat: daftarTerlihat } = await pantauChatWa.bacaBelumDibalasWa(view);
             daftar.forEach((d) => belumDibalas.push({ workspace_id: ws.id, ...d }));
+            daftarTerlihat.forEach((nama) => kontakTerlihat.push({ workspace_id: ws.id, kontak_nama: nama }));
         } else if (platform === 'shopee' && status === 'terhubung') {
             const daftar = await pantauChatWa.bacaBelumDibalasShopee(view);
             daftar.forEach((d) => belumDibalas.push({ workspace_id: ws.id, ...d }));
@@ -734,7 +736,7 @@ async function laporStatusChatHub() {
     await requestJson('POST', `${cfg.apiBaseUrl}/api/chathub/lapor-status`, {
         Authorization: `Bearer ${token}`,
         Accept: 'application/json',
-    }, { perangkat: alatBantu.muatNamaPerangkat(), koneksi, belum_dibalas: belumDibalas });
+    }, { perangkat: alatBantu.muatNamaPerangkat(), koneksi, belum_dibalas: belumDibalas, kontak_terlihat: kontakTerlihat });
 }
 
 /** Cek pengingat follow-up yang sudah jatuh tempo tiap 30 detik — munculkan sebagai
