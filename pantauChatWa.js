@@ -397,8 +397,18 @@ async function bacaStatusKoneksi(view, platform) {
         }
 
         if (platform === 'tokped') {
-            const panjangTeks = await view.webContents.executeJavaScript('document.body ? document.body.innerText.length : 0');
-            return panjangTeks > 0 ? 'terhubung' : 'perlu_login';
+            // Dulu cuma cek halaman punya isi teks apa saja -- SANGAT longgar, tab yang login
+            // tapi kebetulan pindah ke halaman lain di Seller Center (dashboard, produk, dst,
+            // BUKAN ruang chat) tetap kebaca "Terhubung" padahal deteksi chat tidak jalan sama
+            // sekali di situ. Diperbaiki 8 Sep 2026: cek folder sidebar "Belum dibalas" --
+            // elemen ini SELALU ada di struktur halaman ruang chat, walau 0 percakapan, dan
+            // TIDAK ada di halaman Seller Center lain. Kalau tidak ketemu, anggap TIDAK
+            // terhubung (baik karena belum login ATAU cuma tidak sedang di ruang chat -- efeknya
+            // sama: deteksi chat masuk tidak jalan sampai balik ke ruang chat).
+            const diRuangChat = await view.webContents.executeJavaScript(
+                `!!document.querySelector('${SELECTOR_FOLDER_BELUM_DIBALAS_TOKPED}')`
+            );
+            return diRuangChat ? 'terhubung' : 'terputus';
         }
 
         return 'terhubung';
