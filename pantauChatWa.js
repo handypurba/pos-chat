@@ -49,6 +49,14 @@ const SKRIP_EKSTRAK_WA = `
 `;
 
 const POLA_WAKTU = /^(\d{1,2}:\d{2}|Kemarin|Hari ini|Senin|Selasa|Rabu|Kamis|Jumat|Sabtu|Minggu|\d{1,2}\/\d{1,2}\/\d{2,4})$/i;
+
+// WA cuma pakai format jam:menit polos ("10:42") utk pesan HARI INI -- "Kemarin", nama hari
+// (2-6 hari lalu), atau tanggal lengkap (lebih lama) dipakai utk pesan BUKAN hari ini. Dipakai
+// buat filter kontakTerlihat (lihat bacaBelumDibalasWa()) -- JANGAN dipakai buat keperluan lain
+// tanpa sadar konsekuensinya (mis. badge "belum dibalas" TETAP pakai POLA_WAKTU biasa di atas,
+// tidak boleh ikut kena filter ini, karena pesan belum dibalas yang genuinely lama tetap valid
+// utk pengingat).
+const POLA_JAM_HARI_INI = /^\d{1,2}:\d{2}$/;
 const POLA_IKON_STATUS_KIRIM = /read|check|dblcheck|msg-|sent|delivered/i;
 
 // Baris terakhir pesan GRUP biasanya diawali "Nama Pengirim: isi pesan" (WA nampilin nama
@@ -221,7 +229,16 @@ async function bacaBelumDibalasWa(view) {
             const info = analisisBarisWa(baris);
             if (!info.nama || info.kemungkinanGrup) continue;
 
-            kontakTerlihat.push(info.nama);
+            // HANYA laporkan sebagai "terlihat" kalau pesan TERAKHIR di baris itu beneran HARI
+            // INI (format jam:menit polos "10:42" -- WA cuma pakai format ini utk hari ini;
+            // "Kemarin"/nama hari/tanggal lengkap berarti BUKAN hari ini). WAJIB, bukan
+            // opsional -- ditemukan owner 8 Sep 2026: tanpa filter ini, chat LAMA yang kebetulan
+            // masih ada di daftar (kadang berbulan-bulan, WA tidak pernah menghapus baris dari
+            // daftar) ikut kelaporkan tiap kali tab reconnect/reload, bikin Lead basi (kejadian
+            // nyata: kontak "anwar" chat terakhir 19 Agustus tapi tiba-tiba jadi Lead baru).
+            if (POLA_JAM_HARI_INI.test((info.waktuMentah || '').trim())) {
+                kontakTerlihat.push(info.nama);
+            }
 
             if (info.sudahDibalas) continue;
 
