@@ -28,6 +28,11 @@ const SKRIP_EKSTRAK_WA = `
 (function () {
     function dumpBaris(el) {
         const potongan = [];
+        // Ikon avatar grup (dipakai deteksi "ini grup, bukan kontak personal" -- lihat
+        // analisisBarisWa) -- WhatsApp Web pakai data-icon="default-group" di SVG avatar kalau
+        // grupnya TIDAK punya foto custom. Dicek terpisah dari loop teks di bawah karena SVG
+        // tidak punya title/aria-label/teks langsung yang biasa ditangkap.
+        const adaIkonGrup = !!el.querySelector('[data-icon*="group" i]');
         el.querySelectorAll('*').forEach((node) => {
             const teks = (node.getAttribute('title') || node.getAttribute('aria-label') || '').trim();
             const langsung = Array.from(node.childNodes)
@@ -36,7 +41,7 @@ const SKRIP_EKSTRAK_WA = `
                 .join('');
             if (teks || langsung) potongan.push({ tag: node.tagName, t: teks, x: langsung });
         });
-        return potongan;
+        return { potongan, adaIkonGrup };
     }
     const baris = document.querySelectorAll('[data-testid="cell-frame-container"]');
     return JSON.stringify(Array.from(baris).map((b) => dumpBaris(b)));
@@ -46,7 +51,15 @@ const SKRIP_EKSTRAK_WA = `
 const POLA_WAKTU = /^(\d{1,2}:\d{2}|Kemarin|Hari ini|Senin|Selasa|Rabu|Kamis|Jumat|Sabtu|Minggu|\d{1,2}\/\d{1,2}\/\d{2,4})$/i;
 const POLA_IKON_STATUS_KIRIM = /read|check|dblcheck|msg-|sent|delivered/i;
 
-function analisisBarisWa(potongan) {
+// Baris terakhir pesan GRUP biasanya diawali "Nama Pengirim: isi pesan" (WA nampilin nama
+// pengirim di depan cuplikan) -- 1-1 chat tidak pernah begitu. Dipakai sebagai sinyal CADANGAN
+// kalau grupnya PAKAI foto custom (data-icon default-group cuma ada kalau TIDAK ada foto).
+// Ditemukan owner 8 Sep 2026: chat masuk grup ("Mini Tim", "Manajemen Hanmar Kost", dst) ikut
+// kebaca jadi Lead -- jelas bukan calon pelanggan, harus disaring sebelum sampai ke server.
+const POLA_AWALAN_PENGIRIM_GRUP = /^[^:]{1,40}:\s.+/;
+
+function analisisBarisWa(baris) {
+    const { potongan, adaIkonGrup } = baris;
     const namaEntry = potongan.find((p) => p.tag === 'SPAN' && p.t && p.t === p.x);
     const nama = namaEntry ? namaEntry.x : null;
 
@@ -62,7 +75,9 @@ function analisisBarisWa(potongan) {
     );
     const pesanCuplikan = kandidatPesan.length ? kandidatPesan[kandidatPesan.length - 1].x : null;
 
-    return { nama: namaBersih(nama), waktuMentah, sudahDibalas, pesanCuplikan };
+    const kemungkinanGrup = adaIkonGrup || (!!pesanCuplikan && POLA_AWALAN_PENGIRIM_GRUP.test(pesanCuplikan));
+
+    return { nama: namaBersih(nama), waktuMentah, sudahDibalas, pesanCuplikan, kemungkinanGrup };
 }
 
 // Kalau nama koma cuma dikit bagiannya (2-3), kemungkinan besar itu nama toko + alamat yang
@@ -189,9 +204,9 @@ async function bacaBelumDibalasWa(view) {
         const semuaBaris = JSON.parse(mentah);
         const hasil = [];
 
-        for (const potongan of semuaBaris) {
-            const info = analisisBarisWa(potongan);
-            if (!info.nama || info.sudahDibalas) continue;
+        for (const baris of semuaBaris) {
+            const info = analisisBarisWa(baris);
+            if (!info.nama || info.sudahDibalas || info.kemungkinanGrup) continue;
 
             const waktuAbsolut = waktuMentahKeAbsolut(info.waktuMentah);
             if (!waktuAbsolut) continue;
