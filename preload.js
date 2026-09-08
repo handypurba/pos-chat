@@ -25,6 +25,13 @@ contextBridge.exposeInMainWorld('chatHub', {
     simpanDnd: (konfig) => ipcRenderer.invoke('dnd-simpan', konfig),
     cekDnd: (platform) => ipcRenderer.invoke('dnd-cek', platform),
 
+    muatTabDibungkam: () => ipcRenderer.invoke('tab-dibungkam-muat'),
+    simpanTabDibungkam: (daftarId) => ipcRenderer.invoke('tab-dibungkam-simpan', daftarId),
+
+    muatLebarSidebar: () => ipcRenderer.invoke('sidebar-lebar-muat'),
+    simpanLebarSidebar: (px) => ipcRenderer.invoke('sidebar-lebar-simpan', px),
+    geserLebarSidebarSementara: (px) => ipcRenderer.invoke('sidebar-lebar-sementara', px),
+
     muatNamaPerangkat: () => ipcRenderer.invoke('perangkat-muat'),
     simpanNamaPerangkat: (nama) => ipcRenderer.invoke('perangkat-simpan', nama),
     muatJedaTabLeads: () => ipcRenderer.invoke('jeda-tab-leads-muat'),

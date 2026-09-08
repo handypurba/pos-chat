@@ -186,7 +186,11 @@ function unduhFile(url, tujuanPath) {
     });
 }
 
-const SIDEBAR_WIDTH = 96;
+// Lebar sidebar (daftar tab) bisa digeser user -- diminta owner 8 Sep 2026 (lihat
+// #sidebar-resizer di sidebar.html). Dimuat dari pengaturan tersimpan saat startup; berubah
+// lewat IPC 'sidebar-lebar-sementara' (selagi diseret, live) & 'sidebar-lebar-simpan' (dilepas,
+// permanen) -- lihat handler di bawah. SENGAJA bukan const lagi.
+let SIDEBAR_WIDTH = 96;
 // PENTING: nomor versi di sini harus SAMA dengan versi Chromium sungguhan yang dibundel Electron
 // (cek process.versions.chrome) — kalau beda, situs modern (Tokopedia dkk) bisa mendeteksi lewat
 // navigator.userAgentData (Client Hints, TIDAK ikut disamarkan oleh setUserAgent) yang otomatis
@@ -1018,6 +1022,27 @@ ipcMain.handle('dnd-muat', () => alatBantu.muatDnd());
 ipcMain.handle('dnd-simpan', (event, konfig) => alatBantu.simpanDnd(konfig));
 ipcMain.handle('dnd-cek', (event, platform) => alatBantu.dalamJamDnd(alatBantu.muatDnd(), platform));
 
+// --- Bungkam suara/toast per TAB, permanen (beda dari Jangan Ganggu di atas yang per platform
+// & terjadwal) -- diminta owner 8 Sep 2026. ---
+ipcMain.handle('tab-dibungkam-muat', () => alatBantu.muatTabDibungkam());
+ipcMain.handle('tab-dibungkam-simpan', (event, daftarId) => alatBantu.simpanTabDibungkam(daftarId));
+
+// --- Lebar sidebar (daftar tab) bisa digeser -- diminta owner 8 Sep 2026. 'sementara' dipanggil
+// TERUS selagi diseret (live, tidak ditulis ke disk); 'simpan' cuma sekali di mouseup (permanen).
+// Keduanya reposisi BrowserView yang lagi aktif supaya konten ikut menyesuaikan real-time. ---
+ipcMain.handle('sidebar-lebar-muat', () => alatBantu.muatLebarSidebar());
+ipcMain.handle('sidebar-lebar-sementara', (event, px) => {
+    SIDEBAR_WIDTH = Math.min(220, Math.max(76, Math.round(Number(px)) || SIDEBAR_WIDTH));
+    const view = views[activeId];
+    if (view && !view.webContents.isDestroyed()) aturUkuranView(view);
+});
+ipcMain.handle('sidebar-lebar-simpan', (event, px) => {
+    SIDEBAR_WIDTH = alatBantu.simpanLebarSidebar(px);
+    const view = views[activeId];
+    if (view && !view.webContents.isDestroyed()) aturUkuranView(view);
+    return SIDEBAR_WIDTH;
+});
+
 // --- Nama Perangkat (label laptop, dikirim tiap lapor status -- lihat laporStatusChatHub) ---
 ipcMain.handle('perangkat-muat', () => alatBantu.muatNamaPerangkat());
 ipcMain.handle('perangkat-simpan', (event, nama) => alatBantu.simpanNamaPerangkat(nama));
@@ -1151,6 +1176,7 @@ function aturAutoUpdate() {
 }
 
 app.whenReady().then(() => {
+    SIDEBAR_WIDTH = alatBantu.muatLebarSidebar();
     buatWindow();
     // Follow-up & polling broadcast job baru dimulai di mulaiSetelahLogin(), setelah login
     // Hanmar Chat Hub berhasil — bukan di sini.

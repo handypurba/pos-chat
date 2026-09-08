@@ -5,6 +5,7 @@ const { app } = require('electron');
 const FILE_BALASAN_CEPAT = () => path.join(app.getPath('userData'), 'balasan-cepat.json');
 const FILE_PENGINGAT = () => path.join(app.getPath('userData'), 'pengingat-followup.json');
 const FILE_DND = () => path.join(app.getPath('userData'), 'jangan-ganggu.json');
+const FILE_TAB_DIBUNGKAM = () => path.join(app.getPath('userData'), 'tab-dibungkam.json');
 const FILE_PERANGKAT = () => path.join(app.getPath('userData'), 'nama-perangkat.json');
 
 function bacaJson(file, bawaan) {
@@ -103,6 +104,40 @@ function dalamJamDnd(konfig, platform) {
     return menitSekarang >= mulai && menitSekarang < selesai;
 }
 
+// --- Bungkam suara/toast utk TAB TERTENTU, PERMANEN (bukan terjadwal per platform seperti
+// Jangan Ganggu di atas) -- diminta owner 8 Sep 2026, mis. tab pribadi/personal yang tidak
+// perlu bunyi tiap ada chat masuk, sementara tab jualan (Admin DLP/HF) tetap bunyi seperti
+// biasa. Badge merah TETAP muncul (sama seperti Jangan Ganggu) -- cuma suara & toast-nya yang
+// dibungkam, biar tidak kelewat kalau dibuka manual. Disimpan sebagai daftar id workspace. ---
+function muatTabDibungkam() {
+    return bacaJson(FILE_TAB_DIBUNGKAM(), []);
+}
+
+function simpanTabDibungkam(daftarId) {
+    const bersih = Array.isArray(daftarId) ? daftarId.filter((id) => typeof id === 'string') : [];
+    tulisJson(FILE_TAB_DIBUNGKAM(), bersih);
+    return bersih;
+}
+
+// --- Lebar sidebar (daftar tab) bisa digeser user -- diminta owner 8 Sep 2026. Dibatasi
+// 76-220px (jaga-jaga file konfigurasi rusak/nilai ekstrem, sama pola dengan
+// muatJedaTabLeadsMenit()). ---
+const FILE_LEBAR_SIDEBAR = () => path.join(app.getPath('userData'), 'lebar-sidebar.json');
+const LEBAR_SIDEBAR_DEFAULT = 96;
+const LEBAR_SIDEBAR_MIN = 76;
+const LEBAR_SIDEBAR_MAX = 220;
+
+function muatLebarSidebar() {
+    const px = bacaJson(FILE_LEBAR_SIDEBAR(), { px: LEBAR_SIDEBAR_DEFAULT }).px;
+    return Number.isFinite(px) && px >= LEBAR_SIDEBAR_MIN && px <= LEBAR_SIDEBAR_MAX ? px : LEBAR_SIDEBAR_DEFAULT;
+}
+
+function simpanLebarSidebar(px) {
+    const bersih = Math.min(LEBAR_SIDEBAR_MAX, Math.max(LEBAR_SIDEBAR_MIN, Math.round(Number(px)) || LEBAR_SIDEBAR_DEFAULT));
+    tulisJson(FILE_LEBAR_SIDEBAR(), { px: bersih });
+    return bersih;
+}
+
 // --- Nama Perangkat: label bebas diisi manual sekali per laptop (mis. "Laptop Andhika"),
 // dikirim tiap lapor status ke server (lihat laporStatusChatHub di main.js) supaya status
 // koneksi & progres WA bisa dipisah per laptop di halaman Leads Hanmar POS -- perlu ini karena
@@ -140,6 +175,8 @@ module.exports = {
     muatBalasanCepat, tambahBalasanCepat, hapusBalasanCepat,
     muatPengingat, tambahPengingat, hapusPengingat, ambilPengingatJatuhTempo,
     muatDnd, simpanDnd, dalamJamDnd,
+    muatTabDibungkam, simpanTabDibungkam,
+    muatLebarSidebar, simpanLebarSidebar,
     muatNamaPerangkat, simpanNamaPerangkat,
     muatJedaTabLeadsMenit, simpanJedaTabLeadsMenit,
 };

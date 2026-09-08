@@ -6,8 +6,13 @@
 <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, "Segoe UI", sans-serif; }
+    /* Lebar sidebar (daftar tab) bisa digeser user -- lihat #sidebar-resizer di bawah, diminta
+       owner 8 Sep 2026. Variabel CSS supaya #sidebar & #user-bawah selalu ikut lebar yang sama
+       tanpa perlu duyu-nulis ulang tiap elemen. Nilai awal (96px) sama seperti sebelum fitur
+       ini ada -- diganti JS saat load kalau ada lebar tersimpan (lihat muatLebarSidebar()). */
+    :root { --lebar-sidebar: 96px; }
     #sidebar {
-        position: fixed; top: 0; left: 0; bottom: 0; width: 96px;
+        position: fixed; top: 0; left: 0; bottom: 0; width: var(--lebar-sidebar);
         background: #1f2937; display: flex; flex-direction: column;
         align-items: center; padding-top: 12px; gap: 10px; z-index: 10;
         /* padding-bottom & overflow: supaya daftar tab (termasuk tombol "+") tidak ketutupan
@@ -16,6 +21,13 @@
         padding-bottom: 64px;
         overflow-y: auto;
     }
+    /* Pegangan geser di tepi kanan sidebar -- drag kiri/kanan buat lebarkan/sempitkan daftar
+       tab. Lebar area drag sengaja lebih lebar dari garis visualnya (mudah diklik/di-drag). */
+    #sidebar-resizer {
+        position: fixed; top: 0; bottom: 0; left: var(--lebar-sidebar);
+        width: 6px; margin-left: -3px; z-index: 12; cursor: col-resize;
+    }
+    #sidebar-resizer:hover, #sidebar-resizer.sedang-diseret { background: rgba(59,130,246,0.35); }
     .ws-icon {
         width: 76px; min-height: 48px; border-radius: 14px;
         display: flex; align-items: center; justify-content: center;
@@ -99,7 +111,7 @@
     #login-error { color: #dc2626; font-size: 12px; margin-top: 10px; display: none; }
 
     #user-bawah {
-        position: fixed; left: 0; bottom: 0; width: 96px; z-index: 11;
+        position: fixed; left: 0; bottom: 0; width: var(--lebar-sidebar); z-index: 11;
         background: #1f2937; border-top: 1px solid rgba(255,255,255,0.12);
         padding: 8px 4px; display: none; flex-direction: column; align-items: center; gap: 3px;
     }
@@ -208,6 +220,7 @@
 </head>
 <body>
 <div id="sidebar"></div>
+<div id="sidebar-resizer" title="Geser buat ubah lebar daftar tab"></div>
 <div id="user-bawah"></div>
 <div id="toast-container"></div>
 
@@ -291,6 +304,15 @@
                 <label style="font-size:11px;color:#6b7280;">Bungkam suara/toast utk channel:</label>
                 <div id="dnd-platform-list" style="font-size:12px;margin-bottom:10px;"></div>
                 <button class="aksi kecil" id="btn-simpan-dnd" style="width:100%;">Simpan Pengaturan</button>
+
+                <hr style="margin:14px 0;border:none;border-top:1px solid #e5e7eb;">
+                <p style="font-size:11px;color:#6b7280;margin-bottom:8px;">
+                    Bungkam suara/toast utk TAB TERTENTU secara PERMANEN (beda dari jadwal di atas
+                    yang per channel) -- badge merah tetap muncul, cuma suara & notifikasi pop-up-nya
+                    yang dimatikan. Cocok utk tab pribadi/personal yang tidak perlu bunyi.
+                </p>
+                <div id="tab-dibungkam-list" style="font-size:12px;margin-bottom:10px;max-height:180px;overflow-y:auto;"></div>
+                <button class="aksi kecil" id="btn-simpan-tab-dibungkam" style="width:100%;">Simpan Tab Dibungkam</button>
             </div>
 
             <!-- Perangkat -->
@@ -457,6 +479,48 @@
     let daftarTemplate = [];
     let aturanAutoReply = [];
     let autoReplySudahDimuat = false;
+
+    // --- Lebar sidebar (daftar tab) bisa digeser -- diminta owner 8 Sep 2026. Drag pegangan di
+    // tepi kanan sidebar buat lebarkan/sempitkan; tersimpan lokal per laptop, dan BrowserView
+    // konten (WA/Shopee/dst di sebelah kanan) ikut menyesuaikan posisinya lewat main.js. ---
+    const LEBAR_SIDEBAR_MIN = 76;
+    const LEBAR_SIDEBAR_MAX = 220;
+    const resizer = document.getElementById('sidebar-resizer');
+
+    function terapkanLebarSidebar(px) {
+        document.documentElement.style.setProperty('--lebar-sidebar', px + 'px');
+    }
+
+    (async () => {
+        const tersimpan = await window.chatHub.muatLebarSidebar();
+        terapkanLebarSidebar(tersimpan);
+    })();
+
+    let sedangMenyeretSidebar = false;
+
+    resizer.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        sedangMenyeretSidebar = true;
+        resizer.classList.add('sedang-diseret');
+    });
+
+    window.addEventListener('mousemove', (e) => {
+        if (!sedangMenyeretSidebar) return;
+        const px = Math.min(LEBAR_SIDEBAR_MAX, Math.max(LEBAR_SIDEBAR_MIN, Math.round(e.clientX)));
+        terapkanLebarSidebar(px);
+        // Geser BrowserView (konten WA/Shopee/dst) ikut real-time selagi diseret -- TIDAK
+        // disimpan ke disk tiap gerakan (banyak sekali event-nya), cuma reposisi sementara.
+        // Baru disimpan permanen sekali di mouseup (lihat bawah).
+        window.chatHub.geserLebarSidebarSementara(px);
+    });
+
+    window.addEventListener('mouseup', async () => {
+        if (!sedangMenyeretSidebar) return;
+        sedangMenyeretSidebar = false;
+        resizer.classList.remove('sedang-diseret');
+        const px = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--lebar-sidebar'), 10);
+        await window.chatHub.simpanLebarSidebar(px);
+    });
 
     // --- Login Hanmar Chat Hub (pakai akun Hanmar POS) ---
     const loginOverlay = document.getElementById('login-overlay');
@@ -802,7 +866,7 @@
     async function bukaModalAlatBantu() {
         window.chatHub.sembunyikanViewModal();
         modalAlatBantuOverlay.classList.add('tampil');
-        await Promise.all([renderBalasanCepat(), renderPengingat(), renderDnd(), renderPerangkat(), renderJedaTabLeads()]);
+        await Promise.all([renderBalasanCepat(), renderPengingat(), renderDnd(), renderTabDibungkam(), renderPerangkat(), renderJedaTabLeads()]);
     }
 
     function tutupModalAlatBantu() {
@@ -941,6 +1005,24 @@
         toast('Pengaturan Jangan Ganggu disimpan.', 'sukses');
     });
 
+    // --- Bungkam suara/toast per TAB, permanen (diminta owner 8 Sep 2026) ---
+    async function renderTabDibungkam() {
+        const dibungkam = await window.chatHub.muatTabDibungkam();
+        const listEl = document.getElementById('tab-dibungkam-list');
+        listEl.innerHTML = daftarWorkspace.filter((w) => w.tipe === 'web').map((w) => {
+            const dicentang = dibungkam.includes(w.id) ? 'checked' : '';
+            return `<label style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+                <input type="checkbox" value="${w.id}" ${dicentang} style="width:auto;margin:0;"> ${w.nama}
+            </label>`;
+        }).join('') || '<p style="color:#9ca3af;">Belum ada tab.</p>';
+    }
+
+    document.getElementById('btn-simpan-tab-dibungkam').addEventListener('click', async () => {
+        const daftarId = Array.from(document.querySelectorAll('#tab-dibungkam-list input:checked')).map((c) => c.value);
+        await window.chatHub.simpanTabDibungkam(daftarId);
+        toast('Tab dibungkam disimpan.', 'sukses');
+    });
+
     // --- Nama Perangkat (label laptop, dikirim ke server tiap lapor status) ---
     async function renderPerangkat() {
         document.getElementById('input-nama-perangkat').value = await window.chatHub.muatNamaPerangkat();
@@ -1012,10 +1094,11 @@
             badge.textContent = jumlah > 9 ? '9+' : jumlah;
             badge.classList.add('tampil');
         }
-        // Badge TETAP muncul walau lagi jam Jangan Ganggu (biar tidak kelewat kalau dibuka
-        // manual) — cuma suara & toast-nya yang dibungkam.
+        // Badge TETAP muncul walau lagi jam Jangan Ganggu ATAU tab ini masuk daftar dibungkam
+        // (biar tidak kelewat kalau dibuka manual) — cuma suara & toast-nya yang dibungkam.
         const dibungkam = await window.chatHub.cekDnd(platform);
-        if (dibungkam) return;
+        const tabDibungkam = (await window.chatHub.muatTabDibungkam()).includes(workspaceId);
+        if (dibungkam || tabDibungkam) return;
         putarNotif(platform);
         tampilkanToast(workspaceId, jumlah);
     });
