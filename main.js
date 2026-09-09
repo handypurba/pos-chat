@@ -721,7 +721,7 @@ async function laporStatusChatHub() {
         if (baruSajaDimuat) {
             // lewati pembacaan belum-dibalas untuk tab ini siklus ini
         } else if (platform === 'whatsapp' && status === 'terhubung') {
-            const { belumDibalas: daftar, kontakTerlihat: daftarTerlihat } = await pantauChatWa.bacaBelumDibalasWa(view);
+            const { belumDibalas: daftar, kontakTerlihat: daftarTerlihat } = await pantauChatWa.bacaBelumDibalasWa(view, ws.id);
             daftar.forEach((d) => belumDibalas.push({ workspace_id: ws.id, ...d }));
             daftarTerlihat.forEach((nama) => kontakTerlihat.push({ workspace_id: ws.id, kontak_nama: nama }));
         } else if (platform === 'shopee' && status === 'terhubung') {

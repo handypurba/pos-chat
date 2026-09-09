@@ -218,7 +218,16 @@ async function bacaBelumDibalasShopee(view) {
  *   polling berikutnya, seberapa pun cepatnya admin membalas. Server yang memutuskan aman/tidak
  *   bikin Lead baru (kunci_dedup unik, aman dipanggil berkali-kali -- lihat
  *   Lead::buatDariChatOtomatis()). */
-async function bacaBelumDibalasWa(view) {
+// Kontak yang PERNAH terlihat "belum dibalas" (pesan terakhir dari PELANGGAN) sejak aplikasi
+// dibuka -- dipakai bacaBelumDibalasWa() supaya kontakTerlihat tidak ikut melaporkan chat yang
+// ADMIN mulai duluan (broadcast/ajak order manual). Disimpan di memori saja (reset tiap restart
+// aplikasi), keyed "workspaceId|namaKontak" karena nama kontak bisa sama di tab berbeda.
+// Ditemukan owner 9 Sep 2026: kontak "Naiba Houseware" -- admin yang chat duluan hari itu (bukan
+// pelanggan yang chat masuk) -- salah ikut jadi Lead karena kontakTerlihat sebelumnya melaporkan
+// SEMUA kontak yang aktif hari ini tanpa peduli siapa yang mulai duluan.
+const pernahBelumDibalas = new Set();
+
+async function bacaBelumDibalasWa(view, workspaceId) {
     try {
         const mentah = await view.webContents.executeJavaScript(SKRIP_EKSTRAK_WA);
         const semuaBaris = JSON.parse(mentah);
@@ -229,14 +238,18 @@ async function bacaBelumDibalasWa(view) {
             const info = analisisBarisWa(baris);
             if (!info.nama || info.kemungkinanGrup) continue;
 
-            // HANYA laporkan sebagai "terlihat" kalau pesan TERAKHIR di baris itu beneran HARI
-            // INI (format jam:menit polos "10:42" -- WA cuma pakai format ini utk hari ini;
-            // "Kemarin"/nama hari/tanggal lengkap berarti BUKAN hari ini). WAJIB, bukan
-            // opsional -- ditemukan owner 8 Sep 2026: tanpa filter ini, chat LAMA yang kebetulan
-            // masih ada di daftar (kadang berbulan-bulan, WA tidak pernah menghapus baris dari
-            // daftar) ikut kelaporkan tiap kali tab reconnect/reload, bikin Lead basi (kejadian
-            // nyata: kontak "anwar" chat terakhir 19 Agustus tapi tiba-tiba jadi Lead baru).
-            if (POLA_JAM_HARI_INI.test((info.waktuMentah || '').trim())) {
+            const kunciPernah = workspaceId + '|' + info.nama;
+            if (!info.sudahDibalas) pernahBelumDibalas.add(kunciPernah);
+
+            // HANYA laporkan sebagai "terlihat" (buat bikin Lead) kalau (a) pesan TERAKHIR di
+            // baris itu beneran HARI INI (format jam:menit polos "10:42" -- WA cuma pakai format
+            // ini utk hari ini; "Kemarin"/nama hari/tanggal lengkap berarti BUKAN hari ini, cegah
+            // chat lama yang kebetulan masih di daftar ikut kelaporkan, kejadian nyata: kontak
+            // "anwar" 19 Agustus) DAN (b) kontak itu PERNAH terlihat belum dibalas (pesan terakhir
+            // dari PELANGGAN, bukan admin yang mulai duluan) -- kalau admin chat duluan (checklist
+            // selalu ada sejak baris pertama kali kelihatan), kunciPernah TIDAK PERNAH masuk Set
+            // ini, jadi TIDAK PERNAH dianggap "terlihat" biarpun aktif hari ini.
+            if (POLA_JAM_HARI_INI.test((info.waktuMentah || '').trim()) && pernahBelumDibalas.has(kunciPernah)) {
                 kontakTerlihat.push(info.nama);
             }
 
