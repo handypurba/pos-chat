@@ -1,4 +1,4 @@
-const { app, BrowserWindow, BrowserView, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, BrowserView, ipcMain, dialog, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const https = require('https');
@@ -513,12 +513,50 @@ function buatView(ws) {
         });
     }
 
-    // Beberapa fitur (mis. Chat Shopee Seller Centre) buka jendela baru (window.open) —
-    // supaya user tetap fokus di 1 jendela aplikasi ini, alihkan ke tab yang sama, jangan
-    // biarkan lompat ke jendela/browser terpisah di luar aplikasi.
-    view.webContents.setWindowOpenHandler(({ url }) => {
-        view.webContents.loadURL(url);
+    // Beberapa fitur (mis. Chat Shopee Seller Centre) buka jendela baru (window.open) --
+    // dialihkan ke tab yang SAMA (bukan jendela terpisah) supaya user tetap fokus di 1 jendela
+    // aplikasi, TAPI CUMA kalau tujuannya domain yang dipercaya (masih 1 platform yang sama,
+    // mis. Shopee buka popup Shopee lagi, atau domain URL asli tab itu -- termasuk redirect
+    // login/auth yang wajar). Kalau tujuannya domain LAIN SAMA SEKALI (mis. link dari isi pesan
+    // WA yang diklik -- entah itu situs kamera EZVIZ, marketplace lain, dst), buka di browser
+    // SISTEM (default: Chrome/Edge) supaya sesi WA/Shopee/Tokped di tab itu tidak "ketiban"
+    // konten asing yang tidak ada jalan baliknya -- ditemukan owner 9 Sep 2026: klik link di WA
+    // bikin tab WA-nya berubah total jadi halaman lain, tidak bisa balik lagi ke WA kecuali
+    // Edit URL/restart aplikasi.
+    const domainDipercaya = (url) => {
+        let host;
+        try { host = new URL(url).hostname; } catch { return false; }
+        const cocokAkhiran = (domain) => host === domain || host.endsWith('.' + domain);
+
+        const domainPlatform = { whatsapp: ['whatsapp.com'], shopee: ['shopee.co.id', 'shopee.com'], tokped: ['tokopedia.com'] };
+        if ((domainPlatform[platformDari(ws.id)] || []).some(cocokAkhiran)) return true;
+
+        try {
+            if (cocokAkhiran(new URL(ws.url).hostname)) return true;
+        } catch { /* tab tipe broadcast tidak punya ws.url -- aman diabaikan */ }
+
+        return false;
+    };
+
+    const bukaExternalAtauSamaTab = ({ url }) => {
+        if (domainDipercaya(url)) {
+            view.webContents.loadURL(url);
+        } else {
+            shell.openExternal(url).catch(() => {});
+        }
         return { action: 'deny' };
+    };
+    view.webContents.setWindowOpenHandler(bukaExternalAtauSamaTab);
+
+    // Klik link BIASA (bukan window.open, mis. <a href> polos di isi pesan WA) menavigasi
+    // TAB ITU SENDIRI langsung, tidak lewat setWindowOpenHandler di atas sama sekali -- cegah
+    // juga di sini dengan alasan yang sama. Navigasi PERTAMA (loadURL awal saat tab dibuat) juga
+    // lewat sini, tapi aman karena domain URL asli tab SELALU dipercaya (lihat domainDipercaya).
+    view.webContents.on('will-navigate', (event, url) => {
+        if (!domainDipercaya(url)) {
+            event.preventDefault();
+            shell.openExternal(url).catch(() => {});
+        }
     });
 
     return view;
