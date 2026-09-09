@@ -782,6 +782,20 @@
             });
             menu.appendChild(reload);
 
+            // "Kembali" -- diminta owner 9 Sep 2026, buat pulihkan tab yang kepindah ke halaman
+            // lain (mis. klik link asing di isi chat) TANPA perlu Edit URL/restart aplikasi.
+            // Reload TIDAK cukup di kasus itu (reload cuma ulangi halaman yang SEKARANG termuat,
+            // bukan balik ke sebelumnya) -- ini pakai riwayat navigasi browser biasa (goBack).
+            const kembali = document.createElement('div');
+            kembali.className = 'item';
+            kembali.textContent = 'Kembali';
+            kembali.addEventListener('click', async () => {
+                tutupMenuKonteks();
+                const hasil = await window.chatHub.kembaliWorkspace(ws.id);
+                if (!hasil.berhasil) toast('Tidak ada riwayat halaman sebelumnya utk tab ini.', 'gagal');
+            });
+            menu.appendChild(kembali);
+
             // Edit URL -- diminta owner 7 Sep 2026, supaya kalau ada tab yang URL-nya keliru
             // (mis. lupa "?embed=1" buat halaman Hanmar POS) bisa diperbaiki langsung tanpa
             // hapus-tambah ulang tab-nya (dulu satu-satunya cara).

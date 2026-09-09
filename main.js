@@ -885,6 +885,20 @@ ipcMain.on('workspace-reload', (event, id) => {
     if (view && !view.webContents.isDestroyed()) view.webContents.reload();
 });
 
+/** "Kembali" -- diminta owner 9 Sep 2026, pulihkan tab yang kepindah ke halaman lain (mis. klik
+ * link asing di isi chat, atau navigasi apa pun yang tidak diinginkan) TANPA Edit URL/restart
+ * aplikasi. Pakai riwayat navigasi bawaan Chromium (goBack), bukan balik ke ws.url -- supaya
+ * juga berguna buat navigasi wajar dalam 1 platform yang sama (mis. Shopee pindah-pindah
+ * halaman), bukan cuma kasus link asing. */
+ipcMain.handle('workspace-kembali', (event, id) => {
+    const view = views[id];
+    if (!view || view.webContents.isDestroyed() || !view.webContents.navigationHistory.canGoBack()) {
+        return { berhasil: false };
+    }
+    view.webContents.navigationHistory.goBack();
+    return { berhasil: true };
+});
+
 /** Tambah tab web baru secara manual (tombol "+" di sidebar) — id dibuat unik dari platform +
  * timestamp, supaya tab sejenis (mis. beberapa WhatsApp) tetap kebagian suara notif yang benar
  * lewat platformDari() yang membaca awalan id ("whatsapp-", "shopee-", "tokped-"). */

@@ -42,6 +42,7 @@ contextBridge.exposeInMainWorld('chatHub', {
     editWorkspaceUrl: (id, urlBaru) => ipcRenderer.invoke('workspace-edit-url', { id, urlBaru }),
     reorderWorkspace: (urutanId) => ipcRenderer.invoke('workspace-reorder', urutanId),
     reloadWorkspace: (id) => ipcRenderer.send('workspace-reload', id),
+    kembaliWorkspace: (id) => ipcRenderer.invoke('workspace-kembali', id),
     tambahWorkspace: (data) => ipcRenderer.invoke('workspace-tambah', data),
     hapusWorkspace: (id) => ipcRenderer.invoke('workspace-hapus', id),
 
