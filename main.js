@@ -786,10 +786,29 @@ async function laporStatusChatHub() {
     if (!token) return;
 
     const cfg = muatConfig();
+    const namaPerangkat = alatBantu.muatNamaPerangkat();
+
+    // Kumpulkan semua pengaturan Alat Bantu laptop ini -- diminta owner 10 Sep 2026, supaya
+    // owner bisa lihat pengaturan tiap laptop dari jarak jauh (halaman Hanmar POS) tanpa perlu
+    // cek satu-satu ke laptopnya langsung. Dikirim bareng laporan status yang sudah ada, bukan
+    // endpoint terpisah -- lebih sederhana, dan memang sudah jalan berkala.
+    const dnd = alatBantu.muatDnd();
+    const pengaturan = {
+        jeda_tab_leads_menit: alatBantu.muatJedaTabLeadsMenit(),
+        jeda_lapor_status_detik: alatBantu.muatJedaLaporStatusDetik(),
+        dnd_aktif: dnd.aktif,
+        dnd_mulai: dnd.mulai,
+        dnd_selesai: dnd.selesai,
+        dnd_platform_dibungkam: dnd.platformDibungkam,
+        tab_dibungkam: alatBantu.muatTabDibungkam(),
+        lebar_sidebar_px: alatBantu.muatLebarSidebar(),
+        versi_app: app.getVersion(),
+    };
+
     await requestJson('POST', `${cfg.apiBaseUrl}/api/chathub/lapor-status`, {
         Authorization: `Bearer ${token}`,
         Accept: 'application/json',
-    }, { perangkat: alatBantu.muatNamaPerangkat(), koneksi, belum_dibalas: belumDibalas, kontak_terlihat: kontakTerlihat });
+    }, { perangkat: namaPerangkat, koneksi, belum_dibalas: belumDibalas, kontak_terlihat: kontakTerlihat, pengaturan });
 }
 
 /** Cek pengingat follow-up yang sudah jatuh tempo tiap 30 detik — munculkan sebagai
