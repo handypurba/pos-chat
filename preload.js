@@ -43,6 +43,10 @@ contextBridge.exposeInMainWorld('chatHub', {
     reorderWorkspace: (urutanId) => ipcRenderer.invoke('workspace-reorder', urutanId),
     reloadWorkspace: (id) => ipcRenderer.send('workspace-reload', id),
     kembaliWorkspace: (id) => ipcRenderer.invoke('workspace-kembali', id),
+
+    cekUpdateManual: () => ipcRenderer.invoke('cek-update-manual'),
+    muatVersiApp: () => ipcRenderer.invoke('versi-app-muat'),
+    onStatusUpdateApp: (callback) => ipcRenderer.on('status-update-app', (event, data) => callback(data)),
     tambahWorkspace: (data) => ipcRenderer.invoke('workspace-tambah', data),
     hapusWorkspace: (id) => ipcRenderer.invoke('workspace-hapus', id),
 

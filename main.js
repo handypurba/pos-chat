@@ -1216,10 +1216,24 @@ app.on('second-instance', () => {
  * tetap otomatis terpasang pas app ditutup normal — perilaku bawaan electron-updater). Tujuannya
  * supaya karyawan yang lokasinya jauh (Pekanbaru, owner di Batam) tidak perlu install manual tiap
  * ada perbaikan kecil. */
+/** Kirim status cek update ke sidebar (buat tombol "Cek Update Sekarang", lihat IPC handler
+ * 'cek-update-manual' & 'versi-app-muat' di bawah) -- diminta owner 9 Sep 2026. Sebelumnya
+ * proses ini SEPENUHNYA diam-diam (termasuk kalau gagal, lihat catatan lama di bawah), jadi user
+ * tidak pernah tahu apakah sedang cek/unduh/gagal/sudah versi terbaru sama sekali. */
+function kirimStatusUpdate(status, pesan) {
+    mainWindow?.webContents.send('status-update-app', { status, pesan });
+}
+
 function aturAutoUpdate() {
     autoUpdater.autoDownload = true;
 
+    autoUpdater.on('checking-for-update', () => kirimStatusUpdate('mengecek', 'Sedang mengecek update...'));
+    autoUpdater.on('update-available', (info) => kirimStatusUpdate('mengunduh', `Update v${info.version} ditemukan, sedang diunduh...`));
+    autoUpdater.on('update-not-available', () => kirimStatusUpdate('terbaru', 'Sudah versi terbaru.'));
+    autoUpdater.on('download-progress', (p) => kirimStatusUpdate('mengunduh', `Mengunduh... ${Math.round(p.percent)}%`));
+
     autoUpdater.on('update-downloaded', (info) => {
+        kirimStatusUpdate('siap', `Versi ${info.version} siap dipasang.`);
         dialog.showMessageBox(mainWindow, {
             type: 'info',
             title: 'Update POS Chat siap dipasang',
@@ -1233,14 +1247,22 @@ function aturAutoUpdate() {
         });
     });
 
-    // Kegagalan cek update (mis. internet mati) tidak boleh mengganggu jalannya aplikasi —
-    // cukup diam, dicoba lagi di jadwal berikutnya.
-    autoUpdater.on('error', () => {});
+    // Kegagalan cek update (mis. internet mati) tidak boleh mengganggu jalannya aplikasi (tidak
+    // munculkan dialog error yang mengganggu) -- tapi TETAP dikirim ke sidebar sebagai status
+    // (dulu sepenuhnya diam, user tidak pernah tahu kalau gagal -- diperbaiki 9 Sep 2026).
+    autoUpdater.on('error', (err) => kirimStatusUpdate('gagal', 'Gagal mengecek update: ' + (err?.message || 'tidak diketahui')));
 
     const cekUpdate = () => autoUpdater.checkForUpdates().catch(() => {});
     setTimeout(cekUpdate, 15 * 1000); // kasih waktu app selesai load dulu
     setInterval(cekUpdate, 4 * 60 * 60 * 1000); // lalu ulang tiap 4 jam (app biasanya menyala seharian)
 }
+
+ipcMain.handle('cek-update-manual', () => {
+    kirimStatusUpdate('mengecek', 'Sedang mengecek update...');
+    autoUpdater.checkForUpdates().catch((err) => kirimStatusUpdate('gagal', 'Gagal mengecek update: ' + (err?.message || 'tidak diketahui')));
+});
+
+ipcMain.handle('versi-app-muat', () => app.getVersion());
 
 app.whenReady().then(() => {
     SIDEBAR_WIDTH = alatBantu.muatLebarSidebar();

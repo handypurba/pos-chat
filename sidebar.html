@@ -339,7 +339,14 @@
                 </p>
                 <label style="font-size:11px;color:#6b7280;">Jeda Lapor Status (detik)</label>
                 <input type="number" id="input-jeda-lapor-status" min="10" max="120" placeholder="30">
-                <button class="aksi kecil" id="btn-simpan-jeda-lapor-status" style="width:100%;">Simpan</button>
+                <button class="aksi kecil" id="btn-simpan-jeda-lapor-status" style="width:100%;margin-bottom:14px;">Simpan</button>
+
+                <hr style="margin:0 0 14px;border:none;border-top:1px solid #e5e7eb;">
+                <p style="font-size:11px;color:#6b7280;margin-bottom:6px;">
+                    Versi terpasang: <span id="versi-app-teks" style="font-weight:600;">-</span>
+                </p>
+                <button class="aksi kecil" id="btn-cek-update" style="width:100%;margin-bottom:6px;">Cek Update Sekarang</button>
+                <p id="status-update-teks" style="font-size:11px;color:#6b7280;min-height:14px;"></p>
             </div>
         </div>
 
@@ -889,7 +896,7 @@
     async function bukaModalAlatBantu() {
         window.chatHub.sembunyikanViewModal();
         modalAlatBantuOverlay.classList.add('tampil');
-        await Promise.all([renderBalasanCepat(), renderPengingat(), renderDnd(), renderTabDibungkam(), renderPerangkat(), renderJedaTabLeads(), renderJedaLaporStatus()]);
+        await Promise.all([renderBalasanCepat(), renderPengingat(), renderDnd(), renderTabDibungkam(), renderPerangkat(), renderJedaTabLeads(), renderJedaLaporStatus(), renderVersiApp()]);
     }
 
     function tutupModalAlatBantu() {
@@ -1080,6 +1087,20 @@
         const tersimpan = await window.chatHub.simpanJedaLaporStatus(detik);
         document.getElementById('input-jeda-lapor-status').value = tersimpan;
         toast(`Lapor status sekarang tiap ${tersimpan} detik.`, 'sukses');
+    });
+
+    // --- Cek Update Sekarang -- diminta owner 9 Sep 2026, sebelumnya proses update SEPENUHNYA
+    // diam-diam (termasuk kalau gagal), user tidak pernah tahu status sebenarnya. ---
+    async function renderVersiApp() {
+        document.getElementById('versi-app-teks').textContent = await window.chatHub.muatVersiApp();
+    }
+
+    document.getElementById('btn-cek-update').addEventListener('click', () => {
+        window.chatHub.cekUpdateManual();
+    });
+
+    window.chatHub.onStatusUpdateApp(({ status, pesan }) => {
+        document.getElementById('status-update-teks').textContent = pesan;
     });
 
     // Suara notifikasi bawaan Windows (sudah legal terpasang di komputer, BUKAN suara asli
