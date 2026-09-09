@@ -171,12 +171,36 @@ function simpanJedaTabLeadsMenit(menit) {
     return bersih;
 }
 
+// --- Jeda lapor status ke server (koneksi + belum dibalas + kontak terlihat) -- diminta owner
+// 9 Sep 2026 supaya bisa dicoba-coba dari Alat Bantu tanpa perlu build ulang, mis. dipercepat
+// dari 30 detik default kalau kapasitas server (cek "Resource Usage" di cPanel) masih longgar.
+// Dibatasi 10-120 detik (di bawah 10 detik terlalu agresif buat hosting bersama, di atas 120
+// detik nyaris tidak ada gunanya dibanding default). ---
+const FILE_JEDA_LAPOR_STATUS = () => path.join(app.getPath('userData'), 'jeda-lapor-status.json');
+const JEDA_LAPOR_STATUS_DETIK_DEFAULT = 30;
+const JEDA_LAPOR_STATUS_DETIK_MIN = 10;
+const JEDA_LAPOR_STATUS_DETIK_MAX = 120;
+
+function muatJedaLaporStatusDetik() {
+    const detik = bacaJson(FILE_JEDA_LAPOR_STATUS(), { detik: JEDA_LAPOR_STATUS_DETIK_DEFAULT }).detik;
+    return Number.isFinite(detik) && detik >= JEDA_LAPOR_STATUS_DETIK_MIN && detik <= JEDA_LAPOR_STATUS_DETIK_MAX
+        ? detik
+        : JEDA_LAPOR_STATUS_DETIK_DEFAULT;
+}
+
+function simpanJedaLaporStatusDetik(detik) {
+    const bersih = Math.min(JEDA_LAPOR_STATUS_DETIK_MAX, Math.max(JEDA_LAPOR_STATUS_DETIK_MIN, Math.round(Number(detik)) || JEDA_LAPOR_STATUS_DETIK_DEFAULT));
+    tulisJson(FILE_JEDA_LAPOR_STATUS(), { detik: bersih });
+    return bersih;
+}
+
 module.exports = {
     muatBalasanCepat, tambahBalasanCepat, hapusBalasanCepat,
     muatPengingat, tambahPengingat, hapusPengingat, ambilPengingatJatuhTempo,
     muatDnd, simpanDnd, dalamJamDnd,
     muatTabDibungkam, simpanTabDibungkam,
     muatLebarSidebar, simpanLebarSidebar,
+    muatJedaLaporStatusDetik, simpanJedaLaporStatusDetik,
     muatNamaPerangkat, simpanNamaPerangkat,
     muatJedaTabLeadsMenit, simpanJedaTabLeadsMenit,
 };

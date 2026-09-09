@@ -330,7 +330,16 @@
                 </p>
                 <label style="font-size:11px;color:#6b7280;">Jeda Auto-Buka Tab Leads (menit)</label>
                 <input type="number" id="input-jeda-tab-leads" min="1" max="120" placeholder="5">
-                <button class="aksi kecil" id="btn-simpan-jeda-tab-leads" style="width:100%;">Simpan</button>
+                <button class="aksi kecil" id="btn-simpan-jeda-tab-leads" style="width:100%;margin-bottom:14px;">Simpan</button>
+
+                <p style="font-size:11px;color:#6b7280;margin-bottom:10px;">
+                    Tiap berapa detik aplikasi lapor status (koneksi + chat masuk) ke server Hanmar POS.
+                    Default 30 detik. Cek dulu "Resource Usage" di cPanel sebelum mempercepat --
+                    jangan di bawah 10 detik kalau tidak yakin kapasitas server masih longgar.
+                </p>
+                <label style="font-size:11px;color:#6b7280;">Jeda Lapor Status (detik)</label>
+                <input type="number" id="input-jeda-lapor-status" min="10" max="120" placeholder="30">
+                <button class="aksi kecil" id="btn-simpan-jeda-lapor-status" style="width:100%;">Simpan</button>
             </div>
         </div>
 
@@ -866,7 +875,7 @@
     async function bukaModalAlatBantu() {
         window.chatHub.sembunyikanViewModal();
         modalAlatBantuOverlay.classList.add('tampil');
-        await Promise.all([renderBalasanCepat(), renderPengingat(), renderDnd(), renderTabDibungkam(), renderPerangkat(), renderJedaTabLeads()]);
+        await Promise.all([renderBalasanCepat(), renderPengingat(), renderDnd(), renderTabDibungkam(), renderPerangkat(), renderJedaTabLeads(), renderJedaLaporStatus()]);
     }
 
     function tutupModalAlatBantu() {
@@ -1045,6 +1054,18 @@
         const tersimpan = await window.chatHub.simpanJedaTabLeads(menit);
         document.getElementById('input-jeda-tab-leads').value = tersimpan;
         toast(`Auto-buka tab Leads sekarang tiap ${tersimpan} menit.`, 'sukses');
+    });
+
+    // --- Jeda lapor status ke server (detik) -- diminta owner 9 Sep 2026 ---
+    async function renderJedaLaporStatus() {
+        document.getElementById('input-jeda-lapor-status').value = await window.chatHub.muatJedaLaporStatus();
+    }
+
+    document.getElementById('btn-simpan-jeda-lapor-status').addEventListener('click', async () => {
+        const detik = document.getElementById('input-jeda-lapor-status').value;
+        const tersimpan = await window.chatHub.simpanJedaLaporStatus(detik);
+        document.getElementById('input-jeda-lapor-status').value = tersimpan;
+        toast(`Lapor status sekarang tiap ${tersimpan} detik.`, 'sukses');
     });
 
     // Suara notifikasi bawaan Windows (sudah legal terpasang di komputer, BUKAN suara asli

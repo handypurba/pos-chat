@@ -669,7 +669,7 @@ function mulaiSetelahLogin() {
     // Lapor status koneksi + chat yang belum dibalas ke pos.hanmar.id berkala — dipakai halaman
     // monitoring HP owner (lihat ChatHubStatusController & CekChatLamaDibalas di Laravel).
     setTimeout(() => laporStatusChatHub().catch(() => {}), 20 * 1000);
-    setInterval(() => laporStatusChatHub().catch(() => {}), JEDA_LAPOR_STATUS_MS);
+    jadwalkanLaporStatus();
 
     // Otomatis buka tab "Leads" tiap sekian menit (diatur di Alat Bantu > Perangkat, default 5
     // menit) -- diminta owner 7 Sep 2026, supaya admin selalu kepancing lihat papan Leads &
@@ -683,7 +683,18 @@ function mulaiSetelahLogin() {
     mulaiPemantauPengingat();
 }
 
-const JEDA_LAPOR_STATUS_MS = 30 * 1000;
+/** Jadwalkan laporStatusChatHub() berikutnya, baca jeda TERBARU dari alatBantu tiap kali -- sama
+ * pola dengan jadwalkanBukaTabLeads() (setTimeout REKURSIF, bukan setInterval tetap) supaya
+ * kalau owner ganti angkanya di Alat Bantu > Perangkat, langsung kepakai di siklus berikutnya
+ * tanpa perlu restart aplikasi. Diminta owner 9 Sep 2026 (sebelumnya fixed 30 detik, tidak bisa
+ * diubah tanpa build ulang). */
+function jadwalkanLaporStatus() {
+    setTimeout(() => {
+        laporStatusChatHub()
+            .catch(() => {})
+            .finally(() => jadwalkanLaporStatus());
+    }, alatBantu.muatJedaLaporStatusDetik() * 1000);
+}
 
 /** Kumpulkan status semua tab web (koneksi + khusus WA: daftar kontak yang belum dibalas), lalu
  * kirim ke server. Gagal kirim (jaringan dll) dibiarkan saja — dicoba lagi interval berikutnya,
@@ -1050,6 +1061,10 @@ ipcMain.handle('perangkat-simpan', (event, nama) => alatBantu.simpanNamaPerangka
 // --- Jeda auto-buka tab Leads (menit) -- lihat jadwalkanBukaTabLeads() ---
 ipcMain.handle('jeda-tab-leads-muat', () => alatBantu.muatJedaTabLeadsMenit());
 ipcMain.handle('jeda-tab-leads-simpan', (event, menit) => alatBantu.simpanJedaTabLeadsMenit(menit));
+
+// --- Jeda lapor status ke server (detik) -- diminta owner 9 Sep 2026 ---
+ipcMain.handle('jeda-lapor-status-muat', () => alatBantu.muatJedaLaporStatusDetik());
+ipcMain.handle('jeda-lapor-status-simpan', (event, detik) => alatBantu.simpanJedaLaporStatusDetik(detik));
 
 ipcMain.handle('kontak-daftar', () => kontak.muatSemua());
 
