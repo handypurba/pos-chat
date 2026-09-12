@@ -227,6 +227,19 @@ async function bacaBelumDibalasShopee(view) {
 // SEMUA kontak yang aktif hari ini tanpa peduli siapa yang mulai duluan.
 const pernahBelumDibalas = new Set();
 
+// Baca DOM sesaat setelah reload/reconnect (atau baris yang baru pertama kali dirender, mis.
+// habis scroll) kadang menangkap status TRANSISI (ikon centang belum sempat ke-render sempurna,
+// atau baris ke-render dulu sebelum isinya lengkap) -- pola bug yang SAMA berulang kali ketemu
+// dalam bentuk berbeda-beda (kasus "anwar" 19 Agustus, gerombolan 128 chat lama 8 Sep, "Queen
+// Gallery" 10 Sep, dst). Diperbaiki 12 Sep 2026 secara MENYELURUH (bukan tambal 1 kasus lagi):
+// status 1 baris (sudahDibalas + waktuMentah) HARUS SAMA di 2 kali polling BERTURUT-TURUT
+// sebelum dipercaya -- sekali baca beda dari sebelumnya, dianggap "belum stabil", dilewati dulu
+// siklus ini, baru dipercaya siklus berikutnya kalau sudah konsisten. Konsekuensinya: badge
+// "belum dibalas" & pembuatan Lead baru bisa telat 1 siklus (~10-30 detik tergantung jeda lapor
+// status) -- dampaknya kecil, jauh lebih kecil daripada risiko salah baca yang berulang kali
+// kejadian.
+const riwayatBaris = new Map();
+
 async function bacaBelumDibalasWa(view, workspaceId) {
     try {
         const mentah = await view.webContents.executeJavaScript(SKRIP_EKSTRAK_WA);
@@ -239,6 +252,11 @@ async function bacaBelumDibalasWa(view, workspaceId) {
             if (!info.nama || info.kemungkinanGrup) continue;
 
             const kunciPernah = workspaceId + '|' + info.nama;
+            const sebelumnya = riwayatBaris.get(kunciPernah);
+            const stabil = !!sebelumnya && sebelumnya.sudahDibalas === info.sudahDibalas && sebelumnya.waktuMentah === info.waktuMentah;
+            riwayatBaris.set(kunciPernah, { sudahDibalas: info.sudahDibalas, waktuMentah: info.waktuMentah });
+            if (!stabil) continue;
+
             if (!info.sudahDibalas) pernahBelumDibalas.add(kunciPernah);
 
             // HANYA laporkan sebagai "terlihat" (buat bikin Lead) kalau (a) pesan TERAKHIR di
