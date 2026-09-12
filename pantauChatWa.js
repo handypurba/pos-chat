@@ -268,7 +268,15 @@ async function bacaBelumDibalasWa(view, workspaceId) {
             // selalu ada sejak baris pertama kali kelihatan), kunciPernah TIDAK PERNAH masuk Set
             // ini, jadi TIDAK PERNAH dianggap "terlihat" biarpun aktif hari ini.
             if (POLA_JAM_HARI_INI.test((info.waktuMentah || '').trim()) && pernahBelumDibalas.has(kunciPernah)) {
-                kontakTerlihat.push(info.nama);
+                // Sertakan waktu_pesan_masuk juga di sini (dulu kontakTerlihat cuma kirim nama
+                // kontak polos, TANPA info waktu sama sekali) -- diperbaiki 12 Sep 2026, supaya
+                // server BISA cross-check ulang "beneran hari ini" (sama seperti jalur
+                // belum_dibalas), bukan 100% percaya begitu saja ke klien. Lapisan pertahanan
+                // kedua -- filter POLA_JAM_HARI_INI di atas tetap jalan duluan di sini.
+                const waktuAbsolutTerlihat = waktuMentahKeAbsolut(info.waktuMentah);
+                if (waktuAbsolutTerlihat) {
+                    kontakTerlihat.push({ nama: info.nama, waktu_pesan_masuk: waktuAbsolutTerlihat.toISOString() });
+                }
             }
 
             if (info.sudahDibalas) continue;

@@ -772,7 +772,7 @@ async function laporStatusChatHub() {
         } else if (platform === 'whatsapp' && status === 'terhubung') {
             const { belumDibalas: daftar, kontakTerlihat: daftarTerlihat } = await pantauChatWa.bacaBelumDibalasWa(view, ws.id);
             daftar.forEach((d) => belumDibalas.push({ workspace_id: ws.id, ...d }));
-            daftarTerlihat.forEach((nama) => kontakTerlihat.push({ workspace_id: ws.id, kontak_nama: nama }));
+            daftarTerlihat.forEach((item) => kontakTerlihat.push({ workspace_id: ws.id, kontak_nama: item.nama, waktu_pesan_masuk: item.waktu_pesan_masuk }));
         } else if (platform === 'shopee' && status === 'terhubung') {
             const daftar = await pantauChatWa.bacaBelumDibalasShopee(view);
             daftar.forEach((d) => belumDibalas.push({ workspace_id: ws.id, ...d }));
