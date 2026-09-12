@@ -179,29 +179,48 @@ function waktuMentahShopeeKeAbsolut(waktuMentah) {
     return hasil;
 }
 
-/** Baca daftar kontak yang pesan terakhirnya belum dibalas dari 1 tab Shopee Seller Center. */
-async function bacaBelumDibalasShopee(view) {
+/** Baca daftar kontak yang pesan terakhirnya belum dibalas dari 1 tab Shopee Seller Center --
+ * DAN kontakTerlihat (buat bikin Lead walau admin balas lebih cepat dari jeda polling, sama
+ * seperti WA) -- diperbaiki 12 Sep 2026, sebelumnya Shopee TIDAK PERNAH punya kontakTerlihat
+ * sama sekali (cuma WA), jadi Shopee masih rawan kena masalah "balas cepat tidak tertangkap"
+ * yang WA sudah dibereskan 8 Sep 2026. Sekarang Shopee pakai pola & pengecekan stabilitas yang
+ * SAMA PERSIS dengan WA (lihat prosesStabilitasBaris()). */
+async function bacaBelumDibalasShopee(view, workspaceId) {
     try {
         const mentah = await view.webContents.executeJavaScript(SKRIP_EKSTRAK_SHOPEE);
         const semuaBaris = JSON.parse(mentah);
-        const hasil = [];
+        const belumDibalas = [];
+        const kontakTerlihat = [];
 
         for (const b of semuaBaris) {
-            if (!b.nama || b.sudahDibalas) continue;
+            if (!b.nama) continue;
+
+            const { terlihatHariIni } = prosesStabilitasBaris(
+                'shopee', workspaceId, b.nama, b.sudahDibalas, b.waktuMentah, b.pesanCuplikan
+            );
+
+            if (terlihatHariIni) {
+                const waktuAbsolutTerlihat = waktuMentahShopeeKeAbsolut(b.waktuMentah);
+                if (waktuAbsolutTerlihat) {
+                    kontakTerlihat.push({ nama: b.nama, waktu_pesan_masuk: waktuAbsolutTerlihat.toISOString() });
+                }
+            }
+
+            if (b.sudahDibalas) continue;
 
             const waktuAbsolut = waktuMentahShopeeKeAbsolut(b.waktuMentah);
             if (!waktuAbsolut) continue;
 
-            hasil.push({
+            belumDibalas.push({
                 kontak_nama: b.nama,
                 pesan_cuplikan: b.pesanCuplikan,
                 waktu_pesan_masuk: waktuAbsolut.toISOString(),
             });
         }
 
-        return hasil;
+        return { belumDibalas, kontakTerlihat };
     } catch {
-        return [];
+        return { belumDibalas: [], kontakTerlihat: [] };
     }
 }
 
@@ -219,26 +238,69 @@ async function bacaBelumDibalasShopee(view) {
  *   bikin Lead baru (kunci_dedup unik, aman dipanggil berkali-kali -- lihat
  *   Lead::buatDariChatOtomatis()). */
 // Kontak yang PERNAH terlihat "belum dibalas" (pesan terakhir dari PELANGGAN) sejak aplikasi
-// dibuka -- dipakai bacaBelumDibalasWa() supaya kontakTerlihat tidak ikut melaporkan chat yang
-// ADMIN mulai duluan (broadcast/ajak order manual). Disimpan di memori saja (reset tiap restart
-// aplikasi), keyed "workspaceId|namaKontak" karena nama kontak bisa sama di tab berbeda.
-// Ditemukan owner 9 Sep 2026: kontak "Naiba Houseware" -- admin yang chat duluan hari itu (bukan
-// pelanggan yang chat masuk) -- salah ikut jadi Lead karena kontakTerlihat sebelumnya melaporkan
-// SEMUA kontak yang aktif hari ini tanpa peduli siapa yang mulai duluan.
+// dibuka -- dipakai supaya kontakTerlihat tidak ikut melaporkan chat yang ADMIN mulai duluan
+// (broadcast/ajak order manual). Disimpan di memori saja (reset tiap restart aplikasi), keyed
+// "platform|workspaceId|namaKontak" (platform ikut disertakan sejak 12 Sep 2026, dipakai
+// SEMUA platform yang scan-semua-baris -- WA & Shopee -- bukan cuma WA lagi; Tokped TIDAK
+// perlu ini karena caranya beda, lihat bacaBelumDibalasTokped(), cuma baca folder "Belum
+// dibalas" bawaan yang sudah pasti isinya pesan pelanggan, tidak mungkin kena masalah "admin
+// mulai duluan"). Ditemukan owner 9 Sep 2026: kontak "Naiba Houseware" -- admin yang chat
+// duluan hari itu -- salah ikut jadi Lead karena kontakTerlihat sebelumnya melaporkan SEMUA
+// kontak yang aktif hari ini tanpa peduli siapa yang mulai duluan.
 const pernahBelumDibalas = new Set();
 
 // Baca DOM sesaat setelah reload/reconnect (atau baris yang baru pertama kali dirender, mis.
 // habis scroll) kadang menangkap status TRANSISI (ikon centang belum sempat ke-render sempurna,
 // atau baris ke-render dulu sebelum isinya lengkap) -- pola bug yang SAMA berulang kali ketemu
 // dalam bentuk berbeda-beda (kasus "anwar" 19 Agustus, gerombolan 128 chat lama 8 Sep, "Queen
-// Gallery" 10 Sep, dst). Diperbaiki 12 Sep 2026 secara MENYELURUH (bukan tambal 1 kasus lagi):
-// status 1 baris (sudahDibalas + waktuMentah) HARUS SAMA di 2 kali polling BERTURUT-TURUT
-// sebelum dipercaya -- sekali baca beda dari sebelumnya, dianggap "belum stabil", dilewati dulu
+// Gallery" 10 Sep, dst). Diperbaiki 12 Sep 2026 secara MENYELURUH -- berlaku SEMUA platform
+// yang scan-semua-baris (WA & Shopee), bukan tambal 1 kasus/1 platform lagi: status 1 baris
+// (sudahDibalas + waktuMentah + pesanCuplikan) HARUS SAMA di 2 kali polling BERTURUT-TURUT
+// sebelum dipercaya (3 sinyal sekaligus, bukan cuma 2 -- makin kecil peluang "kebetulan sama"
+// pas transisi) -- sekali baca beda dari sebelumnya, dianggap "belum stabil", dilewati dulu
 // siklus ini, baru dipercaya siklus berikutnya kalau sudah konsisten. Konsekuensinya: badge
 // "belum dibalas" & pembuatan Lead baru bisa telat 1 siklus (~10-30 detik tergantung jeda lapor
 // status) -- dampaknya kecil, jauh lebih kecil daripada risiko salah baca yang berulang kali
 // kejadian.
 const riwayatBaris = new Map();
+
+/** Dipakai bersama oleh WA & Shopee (Tokped tidak perlu, lihat catatan di atas). DUA pengecekan
+ * TERPISAH yang SENGAJA beda perilaku -- percobaan pertama (gabung jadi 1 syarat stabilitas
+ * untuk keduanya) ketahuan JUSTRU MERUSAK deteksi balas-cepat waktu diuji simulasi (lihat
+ * scratchpad/uji_stabilitas.js, 12 Sep 2026): status "belum dibalas" itu SENGAJA transien kalau
+ * admin balas cepat -- mensyaratkan itu bertahan 2 siklus sama saja meniadakan gunanya fitur
+ * balas-cepat ini (diminta owner 8 Sep 2026):
+ *
+ * 1. pernahBelumDibalas -- diisi LANGSUNG dari pembacaan SAAT INI (tanpa syarat stabil). Ini
+ *    fakta historis biner ("kontak ini PERNAH kelihatan belum dibalas, iya/tidak") yang harus
+ *    tetap responsif terhadap balasan cepat. Perlindungan dari "admin mulai duluan" tetap solid
+ *    di sini TANPA butuh syarat stabilitas -- chat yang admin mulai duluan SELALU tampil "sudah
+ *    dibalas" sejak baris pertama muncul (checklist terkirim/dibaca ada dalam hitungan detik,
+ *    jauh lebih cepat dari jeda polling), jadi baris seperti itu memang TIDAK PERNAH kebaca
+ *    "belum dibalas" sama sekali -- bukan soal stabilitas.
+ *
+ * 2. terlihatHariIni (baru dipakai bikin Lead) -- BARU dipercaya kalau pembacaan SAAT INI sama
+ *    persis dengan siklus SEBELUMNYA (sudahDibalas + waktuMentah + pesanCuplikan semua cocok).
+ *    Ini pengaman terhadap baris yang KEBETULAN sesaat kebaca meyakinkan (format waktu valid,
+ *    kelihatan konsisten) padahal DOM belum selesai settle (kasus "Queen Gallery" 10 Sep) --
+ *    beda dari (1), di sini KEPUTUSAN AKHIR bikin Lead boleh telat 1 siklus demi kepastian,
+ *    karena begitu terlihatHariIni true SEKALI, kunci_dedup di server sudah aman dipanggil
+ *    berkali-kali (tidak masalah kalaupun telat). */
+function prosesStabilitasBaris(platform, workspaceId, nama, sudahDibalas, waktuMentah, pesanCuplikan) {
+    const kunci = platform + '|' + workspaceId + '|' + nama;
+
+    if (!sudahDibalas) pernahBelumDibalas.add(kunci);
+
+    const sebelumnya = riwayatBaris.get(kunci);
+    const stabil = !!sebelumnya
+        && sebelumnya.sudahDibalas === sudahDibalas
+        && sebelumnya.waktuMentah === waktuMentah
+        && sebelumnya.pesanCuplikan === pesanCuplikan;
+    riwayatBaris.set(kunci, { sudahDibalas, waktuMentah, pesanCuplikan });
+
+    const terlihatHariIni = stabil && POLA_JAM_HARI_INI.test((waktuMentah || '').trim()) && pernahBelumDibalas.has(kunci);
+    return { terlihatHariIni };
+}
 
 async function bacaBelumDibalasWa(view, workspaceId) {
     try {
@@ -251,28 +313,15 @@ async function bacaBelumDibalasWa(view, workspaceId) {
             const info = analisisBarisWa(baris);
             if (!info.nama || info.kemungkinanGrup) continue;
 
-            const kunciPernah = workspaceId + '|' + info.nama;
-            const sebelumnya = riwayatBaris.get(kunciPernah);
-            const stabil = !!sebelumnya && sebelumnya.sudahDibalas === info.sudahDibalas && sebelumnya.waktuMentah === info.waktuMentah;
-            riwayatBaris.set(kunciPernah, { sudahDibalas: info.sudahDibalas, waktuMentah: info.waktuMentah });
-            if (!stabil) continue;
+            const { terlihatHariIni } = prosesStabilitasBaris(
+                'whatsapp', workspaceId, info.nama, info.sudahDibalas, info.waktuMentah, info.pesanCuplikan
+            );
 
-            if (!info.sudahDibalas) pernahBelumDibalas.add(kunciPernah);
-
-            // HANYA laporkan sebagai "terlihat" (buat bikin Lead) kalau (a) pesan TERAKHIR di
-            // baris itu beneran HARI INI (format jam:menit polos "10:42" -- WA cuma pakai format
-            // ini utk hari ini; "Kemarin"/nama hari/tanggal lengkap berarti BUKAN hari ini, cegah
-            // chat lama yang kebetulan masih di daftar ikut kelaporkan, kejadian nyata: kontak
-            // "anwar" 19 Agustus) DAN (b) kontak itu PERNAH terlihat belum dibalas (pesan terakhir
-            // dari PELANGGAN, bukan admin yang mulai duluan) -- kalau admin chat duluan (checklist
-            // selalu ada sejak baris pertama kali kelihatan), kunciPernah TIDAK PERNAH masuk Set
-            // ini, jadi TIDAK PERNAH dianggap "terlihat" biarpun aktif hari ini.
-            if (POLA_JAM_HARI_INI.test((info.waktuMentah || '').trim()) && pernahBelumDibalas.has(kunciPernah)) {
+            if (terlihatHariIni) {
                 // Sertakan waktu_pesan_masuk juga di sini (dulu kontakTerlihat cuma kirim nama
                 // kontak polos, TANPA info waktu sama sekali) -- diperbaiki 12 Sep 2026, supaya
                 // server BISA cross-check ulang "beneran hari ini" (sama seperti jalur
-                // belum_dibalas), bukan 100% percaya begitu saja ke klien. Lapisan pertahanan
-                // kedua -- filter POLA_JAM_HARI_INI di atas tetap jalan duluan di sini.
+                // belum_dibalas), bukan 100% percaya begitu saja ke klien.
                 const waktuAbsolutTerlihat = waktuMentahKeAbsolut(info.waktuMentah);
                 if (waktuAbsolutTerlihat) {
                     kontakTerlihat.push({ nama: info.nama, waktu_pesan_masuk: waktuAbsolutTerlihat.toISOString() });

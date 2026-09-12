@@ -774,8 +774,9 @@ async function laporStatusChatHub() {
             daftar.forEach((d) => belumDibalas.push({ workspace_id: ws.id, ...d }));
             daftarTerlihat.forEach((item) => kontakTerlihat.push({ workspace_id: ws.id, kontak_nama: item.nama, waktu_pesan_masuk: item.waktu_pesan_masuk }));
         } else if (platform === 'shopee' && status === 'terhubung') {
-            const daftar = await pantauChatWa.bacaBelumDibalasShopee(view);
-            daftar.forEach((d) => belumDibalas.push({ workspace_id: ws.id, ...d }));
+            const { belumDibalas: daftarShopee, kontakTerlihat: daftarTerlihatShopee } = await pantauChatWa.bacaBelumDibalasShopee(view, ws.id);
+            daftarShopee.forEach((d) => belumDibalas.push({ workspace_id: ws.id, ...d }));
+            daftarTerlihatShopee.forEach((item) => kontakTerlihat.push({ workspace_id: ws.id, kontak_nama: item.nama, waktu_pesan_masuk: item.waktu_pesan_masuk }));
         } else if (platform === 'tokped' && status === 'terhubung') {
             const daftar = await pantauChatWa.bacaBelumDibalasTokped(view, ws.id);
             daftar.forEach((d) => belumDibalas.push({ workspace_id: ws.id, ...d }));
