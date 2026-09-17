@@ -569,6 +569,14 @@ function aturUkuranView(view) {
     view.setAutoResize({ width: true, height: true });
 }
 
+/** Ukur ulang tampilan tab yang SEDANG aktif -- dipanggil dari listener resize/maximize/dst
+ * (lihat buatWindow()) DAN dari tombol manual "Segarkan Tampilan" di Alat Bantu (diminta owner
+ * 17 Sep 2026, jaga-jaga kalau race condition-nya masih lolos di kasus tertentu, ada jalan
+ * pintas tanpa perlu tutup-buka aplikasi). */
+function segarkanUkuranAktif() {
+    if (activeId && views[activeId] && !views[activeId].webContents.isDestroyed()) aturUkuranView(views[activeId]);
+}
+
 /** Cari tab "Leads" (dicari dari NAMA tab, bukan id -- id tab custom bisa beda-beda antar
  * laptop, lihat catatan di workspace-tambahan) lalu pindahkan ke situ. Aman kalau tab-nya
  * dihapus/belum ada (tidak ngapa-ngapain). */
@@ -612,6 +620,12 @@ function tampilkanWorkspace(id) {
         if (!view) return;
         mainWindow.setBrowserView(view);
         aturUkuranView(view);
+        // Jaring pengaman tambahan -- ukur ulang lagi sesaat kemudian (0.5 detik) buat nutup
+        // celah race condition kalau jendela BARU SAJA di-maximize/restore hampir bersamaan
+        // dengan tab pertama ditampilkan (lihat catatan di buatWindow() soal listener
+        // maximize/restore/show). Aman dipanggil dobel, cuma set ulang bounds ke ukuran SAAT
+        // ITU, tidak ada efek samping kalau ternyata sudah benar dari awal.
+        setTimeout(() => { if (activeId === id && !view.webContents.isDestroyed()) aturUkuranView(view); }, 500);
         judulTerakhir[id] = jumlahBelumDibaca(view.webContents.getTitle());
         mainWindow.webContents.send('notif-bersih', id);
     }
@@ -646,9 +660,19 @@ function buatWindow() {
         cekLoginLaluMulai();
     });
 
-    mainWindow.on('resize', () => {
-        if (activeId && views[activeId]) aturUkuranView(views[activeId]);
-    });
+    // Segarkan ukuran tampilan (BrowserView tab yang aktif) tiap kali ukuran/status jendela
+    // berubah -- diminta owner 17 Sep 2026: tampilan sempat "macet" kecil di pojok kiri atas
+    // walau jendelanya sendiri sudah besar, biasanya pas PERTAMA KALI buka aplikasi. Dugaan:
+    // race condition -- jendela dimaximize (baik oleh Windows/klik user) HAMPIR BERSAMAAN
+    // dengan tab pertama ditampilkan (aturUkuranView() sempat baca ukuran SEBELUM maximize
+    // selesai), dan 'resize' biasa tidak selalu ke-trigger lagi setelahnya kalau user tidak
+    // menggeser jendela manual. Ditambahkan listener 'maximize'/'unmaximize'/'restore'/'show'
+    // juga (bukan cuma 'resize') supaya lebih banyak jalan buat "menangkap" ukuran final.
+    mainWindow.on('resize', segarkanUkuranAktif);
+    mainWindow.on('maximize', segarkanUkuranAktif);
+    mainWindow.on('unmaximize', segarkanUkuranAktif);
+    mainWindow.on('restore', segarkanUkuranAktif);
+    mainWindow.on('show', segarkanUkuranAktif);
 }
 
 /** Cek token Hanmar Chat Hub yang tersimpan dari login sebelumnya (kalau ada) ke server POS —
@@ -917,6 +941,12 @@ ipcMain.handle('workspace-kembali', (event, id) => {
     }
     view.webContents.navigationHistory.goBack();
     return { berhasil: true };
+});
+
+// Tombol manual "Segarkan Tampilan" -- diminta owner 17 Sep 2026, lihat catatan di
+// segarkanUkuranAktif().
+ipcMain.handle('segarkan-tampilan', () => {
+    segarkanUkuranAktif();
 });
 
 /** Tambah tab web baru secara manual (tombol "+" di sidebar) — id dibuat unik dari platform +

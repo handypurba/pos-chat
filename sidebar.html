@@ -346,7 +346,13 @@
                     Versi terpasang: <span id="versi-app-teks" style="font-weight:600;">-</span>
                 </p>
                 <button class="aksi kecil" id="btn-cek-update" style="width:100%;margin-bottom:6px;">Cek Update Sekarang</button>
-                <p id="status-update-teks" style="font-size:11px;color:#6b7280;min-height:14px;"></p>
+                <p id="status-update-teks" style="font-size:11px;color:#6b7280;min-height:14px;margin-bottom:10px;"></p>
+
+                <hr style="margin:0 0 10px;border:none;border-top:1px solid #e5e7eb;">
+                <p style="font-size:11px;color:#6b7280;margin-bottom:6px;">
+                    Kalau tampilan tab chat pernah "macet" kecil sebelah pojok (biasanya pas baru buka aplikasi), klik ini -- tidak perlu tutup-buka aplikasi.
+                </p>
+                <button class="aksi kecil" id="btn-segarkan-tampilan" style="width:100%;">Segarkan Tampilan</button>
             </div>
         </div>
 
@@ -1101,6 +1107,12 @@
 
     window.chatHub.onStatusUpdateApp(({ status, pesan }) => {
         document.getElementById('status-update-teks').textContent = pesan;
+    });
+
+    // --- Segarkan Tampilan -- diminta owner 17 Sep 2026 ---
+    document.getElementById('btn-segarkan-tampilan').addEventListener('click', async () => {
+        await window.chatHub.segarkanTampilan();
+        toast('Tampilan disegarkan.', 'sukses');
     });
 
     // Suara notifikasi bawaan Windows (sudah legal terpasang di komputer, BUKAN suara asli
