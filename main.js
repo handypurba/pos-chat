@@ -144,7 +144,14 @@ function requestJson(method, url, headers, body) {
                         const err = JSON.parse(hasil);
                         if (err.message) pesan = err.message;
                     } catch {}
-                    reject(new Error(pesan));
+                    const error = new Error(pesan);
+                    // Ditempelkan 23 Sep 2026 -- dipakai cekLoginLaluMulai() buat bedain
+                    // penolakan AUTENTIKASI ASLI (401/403, token beneran kedaluwarsa/dicabut)
+                    // dari kegagalan lain (server error 500, dll) yang TIDAK berarti tokennya
+                    // salah. Lihat juga req.on('error')/timeout di bawah -- itu kegagalan
+                    // JARINGAN, statusCode-nya sengaja tidak diisi sama sekali.
+                    error.statusCode = res.statusCode;
+                    reject(error);
                     return;
                 }
                 if (!hasil) { resolve(null); return; }
@@ -679,7 +686,7 @@ function buatWindow() {
  * kalau masih valid & akunnya masih aktif, langsung lanjut (auto-login) tanpa minta password
  * lagi. Kalau tidak ada token / sudah tidak valid (logout dari device lain, akun dinonaktifkan,
  * dst), tampilkan layar login dan tunggu submit lewat ipcMain.handle('chathub-login'). */
-async function cekLoginLaluMulai() {
+async function cekLoginLaluMulai(percobaanKe = 1) {
     const token = muatTokenChatHub();
     if (token) {
         try {
@@ -691,8 +698,28 @@ async function cekLoginLaluMulai() {
             userChatHub = hasil.user;
             mulaiSetelahLogin();
             return;
-        } catch {
-            hapusTokenChatHub(); // token kadaluwarsa/dicabut/akun nonaktif — minta login ulang
+        } catch (error) {
+            // Diperbaiki 23 Sep 2026: dulu token dihapus untuk SEMUA jenis kegagalan -- termasuk
+            // kegagalan JARINGAN sesaat (internet laptop belum siap/lambat pas app baru dibuka,
+            // server timeout, dst), bukan cuma token yang beneran ditolak server. Akibatnya
+            // owner harus login manual berulang kali padahal tokennya masih valid, cuma
+            // kebetulan internetnya belum konek sempurna pas itu. Sekarang token CUMA dihapus
+            // kalau server BENAR-BENAR menolak (401 token tidak valid, 403 akun nonaktif) --
+            // kegagalan lain (tidak ada statusCode sama sekali = network error/timeout, atau
+            // 5xx error server) dibiarkan, token tetap tersimpan.
+            if (error.statusCode === 401 || error.statusCode === 403) {
+                hapusTokenChatHub();
+            } else if (percobaanKe < 4) {
+                // Kegagalan jaringan/server -- coba lagi beberapa kali dengan jeda, biasanya
+                // internet laptop sudah siap dalam beberapa detik. Sengaja TIDAK tampilkan
+                // layar login dulu selama masih dicoba, supaya kalau berhasil di percobaan
+                // berikutnya, owner tidak perlu ngapa-ngapain sama sekali.
+                setTimeout(() => cekLoginLaluMulai(percobaanKe + 1), 3000);
+                return;
+            }
+            // Sudah 4x gagal (bukan soal token ditolak) -- kemungkinan besar memang lagi
+            // offline/server bermasalah lama. Tampilkan layar login sebagai fallback (token
+            // TETAP tersimpan, dicoba lagi otomatis kalau app dibuka ulang nanti).
         }
     }
     mainWindow.webContents.send('tampilkan-login');
