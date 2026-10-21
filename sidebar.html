@@ -328,6 +328,9 @@
                 <p style="font-size:11px;color:#6b7280;margin-bottom:10px;">
                     Tiap berapa menit aplikasi otomatis pindah ke tab "Leads" (biar admin selalu kepancing lihat & update papan Leads).
                 </p>
+                <label style="font-size:12px;color:#374151;display:flex;gap:6px;align-items:center;margin-bottom:8px;">
+                    <input type="checkbox" id="cek-auto-tab-leads" style="width:auto;margin:0;"> Aktifkan auto-pindah ke tab Leads
+                </label>
                 <label style="font-size:11px;color:#6b7280;">Jeda Auto-Buka Tab Leads (menit)</label>
                 <input type="number" id="input-jeda-tab-leads" min="1" max="120" placeholder="5">
                 <button class="aksi kecil" id="btn-simpan-jeda-tab-leads" style="width:100%;margin-bottom:14px;">Simpan</button>
@@ -1074,13 +1077,15 @@
     // --- Jeda auto-buka tab Leads ---
     async function renderJedaTabLeads() {
         document.getElementById('input-jeda-tab-leads').value = await window.chatHub.muatJedaTabLeads();
+        document.getElementById('cek-auto-tab-leads').checked = await window.chatHub.muatAutoTabLeads();
     }
 
     document.getElementById('btn-simpan-jeda-tab-leads').addEventListener('click', async () => {
         const menit = document.getElementById('input-jeda-tab-leads').value;
         const tersimpan = await window.chatHub.simpanJedaTabLeads(menit);
+        const aktif = await window.chatHub.simpanAutoTabLeads(document.getElementById('cek-auto-tab-leads').checked);
         document.getElementById('input-jeda-tab-leads').value = tersimpan;
-        toast(`Auto-buka tab Leads sekarang tiap ${tersimpan} menit.`, 'sukses');
+        toast(aktif ? `Auto-buka tab Leads aktif, tiap ${tersimpan} menit.` : 'Auto-buka tab Leads dimatikan.', 'sukses');
     });
 
     // --- Jeda lapor status ke server (detik) -- diminta owner 9 Sep 2026 ---

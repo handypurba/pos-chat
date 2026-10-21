@@ -167,8 +167,19 @@ function muatJedaTabLeadsMenit() {
 
 function simpanJedaTabLeadsMenit(menit) {
     const bersih = Math.min(120, Math.max(1, Math.round(Number(menit)) || JEDA_TAB_LEADS_MENIT_DEFAULT));
-    tulisJson(FILE_JEDA_TAB_LEADS(), { menit: bersih });
+    tulisJson(FILE_JEDA_TAB_LEADS(), { menit: bersih, aktif: muatAutoBukaTabLeadsAktif() });
     return bersih;
+}
+
+// Auto-pindah ke tab Leads MATI secara bawaan (diminta owner 21 Okt 2026); hanya jalan kalau
+// owner sengaja menyalakannya. File lama tanpa field "aktif" otomatis dianggap mati.
+function muatAutoBukaTabLeadsAktif() {
+    return bacaJson(FILE_JEDA_TAB_LEADS(), {}).aktif === true;
+}
+
+function simpanAutoBukaTabLeadsAktif(aktif) {
+    tulisJson(FILE_JEDA_TAB_LEADS(), { menit: muatJedaTabLeadsMenit(), aktif: aktif === true });
+    return aktif === true;
 }
 
 // --- Jeda lapor status ke server (koneksi + belum dibalas + kontak terlihat) -- diminta owner
@@ -203,4 +214,5 @@ module.exports = {
     muatJedaLaporStatusDetik, simpanJedaLaporStatusDetik,
     muatNamaPerangkat, simpanNamaPerangkat,
     muatJedaTabLeadsMenit, simpanJedaTabLeadsMenit,
+    muatAutoBukaTabLeadsAktif, simpanAutoBukaTabLeadsAktif,
 };

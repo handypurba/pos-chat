@@ -598,7 +598,7 @@ function bukaTabLeadsOtomatis() {
  * pertama dipasang). */
 function jadwalkanBukaTabLeads() {
     setTimeout(() => {
-        bukaTabLeadsOtomatis();
+        if (alatBantu.muatAutoBukaTabLeadsAktif()) bukaTabLeadsOtomatis();
         jadwalkanBukaTabLeads();
     }, alatBantu.muatJedaTabLeadsMenit() * 60 * 1000);
 }
@@ -846,7 +846,7 @@ async function laporStatusChatHub() {
     // endpoint terpisah -- lebih sederhana, dan memang sudah jalan berkala.
     const dnd = alatBantu.muatDnd();
     const pengaturan = {
-        jeda_tab_leads_menit: alatBantu.muatJedaTabLeadsMenit(),
+        jeda_tab_leads_menit: alatBantu.muatAutoBukaTabLeadsAktif() ? alatBantu.muatJedaTabLeadsMenit() : 0,
         jeda_lapor_status_detik: alatBantu.muatJedaLaporStatusDetik(),
         dnd_aktif: dnd.aktif,
         dnd_mulai: dnd.mulai,
@@ -1190,6 +1190,8 @@ ipcMain.handle('perangkat-simpan', (event, nama) => alatBantu.simpanNamaPerangka
 // --- Jeda auto-buka tab Leads (menit) -- lihat jadwalkanBukaTabLeads() ---
 ipcMain.handle('jeda-tab-leads-muat', () => alatBantu.muatJedaTabLeadsMenit());
 ipcMain.handle('jeda-tab-leads-simpan', (event, menit) => alatBantu.simpanJedaTabLeadsMenit(menit));
+ipcMain.handle('auto-tab-leads-muat', () => alatBantu.muatAutoBukaTabLeadsAktif());
+ipcMain.handle('auto-tab-leads-simpan', (event, aktif) => alatBantu.simpanAutoBukaTabLeadsAktif(aktif));
 
 // --- Jeda lapor status ke server (detik) -- diminta owner 9 Sep 2026 ---
 ipcMain.handle('jeda-lapor-status-muat', () => alatBantu.muatJedaLaporStatusDetik());

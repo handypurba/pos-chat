@@ -36,6 +36,8 @@ contextBridge.exposeInMainWorld('chatHub', {
     simpanNamaPerangkat: (nama) => ipcRenderer.invoke('perangkat-simpan', nama),
     muatJedaTabLeads: () => ipcRenderer.invoke('jeda-tab-leads-muat'),
     simpanJedaTabLeads: (menit) => ipcRenderer.invoke('jeda-tab-leads-simpan', menit),
+    muatAutoTabLeads: () => ipcRenderer.invoke('auto-tab-leads-muat'),
+    simpanAutoTabLeads: (aktif) => ipcRenderer.invoke('auto-tab-leads-simpan', aktif),
     muatJedaLaporStatus: () => ipcRenderer.invoke('jeda-lapor-status-muat'),
     simpanJedaLaporStatus: (detik) => ipcRenderer.invoke('jeda-lapor-status-simpan', detik),
     renameWorkspace: (id, namaBaru) => ipcRenderer.invoke('workspace-rename', { id, namaBaru }),
