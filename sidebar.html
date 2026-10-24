@@ -264,6 +264,7 @@
             <button data-tab="pengingat">Pengingat</button>
             <button data-tab="dnd">Jangan Ganggu</button>
             <button data-tab="perangkat">Perangkat</button>
+            <button data-tab="ulasan">Ulasan Tokped</button>
         </div>
 
         <div class="isi-tab">
@@ -356,6 +357,22 @@
                     Kalau tampilan tab chat pernah "macet" kecil sebelah pojok (biasanya pas baru buka aplikasi), klik ini -- tidak perlu tutup-buka aplikasi.
                 </p>
                 <button class="aksi kecil" id="btn-segarkan-tampilan" style="width:100%;">Segarkan Tampilan</button>
+            </div>
+
+            <!-- Ulasan Tokped -->
+            <div class="isi-tab-panel" id="panel-ulasan">
+                <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:12px;margin-bottom:12px;">
+                    <div style="font-weight:600;font-size:12px;margin-bottom:4px;color:#1f2937;">Monitoring Ulasan Bintang 1-3 Tokopedia</div>
+                    <div style="font-size:11px;color:#4b5563;line-height:1.4;margin-bottom:8px;">
+                        POS Chat secara otomatis memindai ulasan pembeli (bintang 1, 2, 3) dari tab Tokped DLP & Tokped HF setiap 30 menit di latar belakang dan melaporkannya ke POS Hanmar untuk notifikasi banner.
+                    </div>
+                    <div id="status-ulasan-tokped-box" style="font-size:11px;color:#374151;background:#fff;border:1px solid #d1d5db;border-radius:6px;padding:8px;margin-bottom:10px;">
+                        Status: Belum pernah dipindai
+                    </div>
+                    <button class="aksi kecil" id="btn-scan-ulasan-sekarang" style="width:100%;background:#185FA5;color:#fff;border:none;padding:7px 12px;border-radius:6px;font-weight:600;cursor:pointer;">
+                        🔍 Pindai Ulasan Tokped Sekarang
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -905,7 +922,7 @@
     async function bukaModalAlatBantu() {
         window.chatHub.sembunyikanViewModal();
         modalAlatBantuOverlay.classList.add('tampil');
-        await Promise.all([renderBalasanCepat(), renderPengingat(), renderDnd(), renderTabDibungkam(), renderPerangkat(), renderJedaTabLeads(), renderJedaLaporStatus(), renderVersiApp()]);
+        await Promise.all([renderBalasanCepat(), renderPengingat(), renderDnd(), renderTabDibungkam(), renderPerangkat(), renderJedaTabLeads(), renderJedaLaporStatus(), renderVersiApp(), renderUlasanTokped()]);
     }
 
     function tutupModalAlatBantu() {
@@ -1118,6 +1135,38 @@
     document.getElementById('btn-segarkan-tampilan').addEventListener('click', async () => {
         await window.chatHub.segarkanTampilan();
         toast('Tampilan disegarkan.', 'sukses');
+    });
+
+    // --- Ulasan Tokped ---
+    async function renderUlasanTokped() {
+        try {
+            const status = await window.chatHub.muatStatusUlasanTokped();
+            const box = document.getElementById('status-ulasan-tokped-box');
+            if (box && status) {
+                box.innerHTML = `
+                    <div><strong>Status:</strong> ${status.status}</div>
+                    <div style="margin-top:4px;"><strong>Terakhir dipindai:</strong> ${status.terakhirScanPada || 'Belum'}</div>
+                    <div style="margin-top:2px;"><strong>Ulasan Bintang 1-3 Aktif:</strong> ${status.jumlahUlasan}</div>
+                `;
+            }
+        } catch (e) {}
+    }
+
+    document.getElementById('btn-scan-ulasan-sekarang')?.addEventListener('click', async () => {
+        const btn = document.getElementById('btn-scan-ulasan-sekarang');
+        btn.disabled = true;
+        btn.innerText = '⏳ Sedang memindai ulasan Tokopedia...';
+        toast('Memulai pemindaian ulasan Tokopedia di background...', 'info');
+        try {
+            const hasil = await window.chatHub.scanUlasanTokpedManual();
+            toast(hasil.status || 'Pemindaian selesai.', 'sukses');
+            renderUlasanTokped();
+        } catch (err) {
+            toast('Gagal memindai: ' + (err.message || 'Error'), 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerText = '🔍 Pindai Ulasan Tokped Sekarang';
+        }
     });
 
     // Suara notifikasi bawaan Windows (sudah legal terpasang di komputer, BUKAN suara asli

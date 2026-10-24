@@ -14,6 +14,7 @@ const followup = require('./followup');
 const broadcastRemote = require('./broadcastRemote');
 const pantauChatWa = require('./pantauChatWa');
 const alatBantu = require('./alatBantu');
+const pantauUlasanTokped = require('./pantauUlasanTokped');
 const { autoUpdater } = require('electron-updater');
 
 // Cegah lebih dari 1 instance jalan bersamaan — tanpa ini, tiap instance baru buka BrowserView
@@ -760,6 +761,14 @@ function mulaiSetelahLogin() {
     setTimeout(() => laporStatusChatHub().catch(() => {}), 20 * 1000);
     jadwalkanLaporStatus();
 
+    // Pindai ulasan Tokopedia berkala (tiap 30 menit) di background
+    setTimeout(() => {
+        pantauUlasanTokped.scanSemuaUlasanTokped(workspaces, UA_CHROME).catch(() => {});
+    }, 45 * 1000);
+    setInterval(() => {
+        pantauUlasanTokped.scanSemuaUlasanTokped(workspaces, UA_CHROME).catch(() => {});
+    }, 30 * 60 * 1000);
+
     // Otomatis buka tab "Leads" tiap sekian menit (diatur di Alat Bantu > Perangkat, default 5
     // menit) -- diminta owner 7 Sep 2026, supaya admin selalu kepancing lihat papan Leads &
     // pindahkan kartu sesuai progres, bukan cuma dibuka manual kalau ingat. Sengaja pindah tab
@@ -857,10 +866,12 @@ async function laporStatusChatHub() {
         versi_app: app.getVersion(),
     };
 
+    const ulasan = pantauUlasanTokped.ambilUlasanTerbaru();
+
     await requestJson('POST', `${cfg.apiBaseUrl}/api/chathub/lapor-status`, {
         Authorization: `Bearer ${token}`,
         Accept: 'application/json',
-    }, { perangkat: namaPerangkat, koneksi, belum_dibalas: belumDibalas, kontak_terlihat: kontakTerlihat, pengaturan });
+    }, { perangkat: namaPerangkat, koneksi, belum_dibalas: belumDibalas, kontak_terlihat: kontakTerlihat, pengaturan, ulasan });
 }
 
 /** Cek pengingat follow-up yang sudah jatuh tempo tiap 30 detik — munculkan sebagai
@@ -1196,6 +1207,14 @@ ipcMain.handle('auto-tab-leads-simpan', (event, aktif) => alatBantu.simpanAutoBu
 // --- Jeda lapor status ke server (detik) -- diminta owner 9 Sep 2026 ---
 ipcMain.handle('jeda-lapor-status-muat', () => alatBantu.muatJedaLaporStatusDetik());
 ipcMain.handle('jeda-lapor-status-simpan', (event, detik) => alatBantu.simpanJedaLaporStatusDetik(detik));
+
+// --- Pemantau Ulasan Tokopedia (bintang 1-3) ---
+ipcMain.handle('scan-ulasan-tokped-manual', async () => {
+    const hasil = await pantauUlasanTokped.scanSemuaUlasanTokped(workspaces, UA_CHROME);
+    laporStatusChatHub().catch(() => {});
+    return hasil;
+});
+ipcMain.handle('status-ulasan-tokped-muat', () => pantauUlasanTokped.ambilStatusScan());
 
 ipcMain.handle('kontak-daftar', () => kontak.muatSemua());
 

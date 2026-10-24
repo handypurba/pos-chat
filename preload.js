@@ -91,4 +91,7 @@ contextBridge.exposeInMainWorld('chatHub', {
     daftarTemplate: () => ipcRenderer.invoke('template-daftar'),
     simpanTemplate: (data) => ipcRenderer.invoke('template-simpan', data),
     hapusTemplate: (id) => ipcRenderer.invoke('template-hapus', id),
+
+    scanUlasanTokpedManual: () => ipcRenderer.invoke('scan-ulasan-tokped-manual'),
+    muatStatusUlasanTokped: () => ipcRenderer.invoke('status-ulasan-tokped-muat'),
 });
