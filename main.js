@@ -761,13 +761,29 @@ function mulaiSetelahLogin() {
     setTimeout(() => laporStatusChatHub().catch(() => {}), 20 * 1000);
     jadwalkanLaporStatus();
 
-    // Pindai ulasan Tokopedia berkala (tiap 30 menit) di background
-    setTimeout(() => {
-        pantauUlasanTokped.scanSemuaUlasanTokped(workspaces, UA_CHROME).catch(() => {});
-    }, 45 * 1000);
-    setInterval(() => {
-        pantauUlasanTokped.scanSemuaUlasanTokped(workspaces, UA_CHROME).catch(() => {});
-    }, 30 * 60 * 1000);
+    // Pindai ulasan Tokopedia otomatis: Setiap jam 10 pagi pada hari kerja (Senin - Sabtu)
+    function cekJadwalUlasanTokped() {
+        const now = new Date();
+        const day = now.getDay(); // 0 = Minggu, 1 = Senin, ..., 6 = Sabtu
+        const isHariKerja = day >= 1 && day <= 6;
+        const jam = now.getHours();
+        const tglHariIni = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+
+        // Jika hari kerja (Senin - Sabtu) dan waktu sudah mencapai jam 10 pagi ke atas (10:00 s/d 23:59)
+        if (isHariKerja && jam >= 10) {
+            if (pantauUlasanTokped.ambilTanggalScanOtomatis() !== tglHariIni) {
+                console.log(`[UlasanTokped] Memulai pemindaian otomatis jam 10 pagi (${tglHariIni})...`);
+                pantauUlasanTokped.setTanggalScanOtomatis(tglHariIni);
+                pantauUlasanTokped.scanSemuaUlasanTokped(workspaces, UA_CHROME)
+                    .then(() => laporStatusChatHub().catch(() => {}))
+                    .catch((err) => console.error('[UlasanTokped] Gagal scan otomatis:', err));
+            }
+        }
+    }
+
+    // Pengecekan pertama 30 detik setelah startup, lalu dicek setiap 60 detik
+    setTimeout(cekJadwalUlasanTokped, 30 * 1000);
+    setInterval(cekJadwalUlasanTokped, 60 * 1000);
 
     // Otomatis buka tab "Leads" tiap sekian menit (diatur di Alat Bantu > Perangkat, default 5
     // menit) -- diminta owner 7 Sep 2026, supaya admin selalu kepancing lihat papan Leads &

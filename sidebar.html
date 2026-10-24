@@ -364,7 +364,7 @@
                 <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:12px;margin-bottom:12px;">
                     <div style="font-weight:600;font-size:12px;margin-bottom:4px;color:#1f2937;">Monitoring Ulasan Bintang 1-3 Tokopedia</div>
                     <div style="font-size:11px;color:#4b5563;line-height:1.4;margin-bottom:8px;">
-                        POS Chat secara otomatis memindai ulasan pembeli (bintang 1, 2, 3) dari tab Tokped DLP & Tokped HF setiap 30 menit di latar belakang dan melaporkannya ke POS Hanmar untuk notifikasi banner.
+                        POS Chat secara otomatis memindai ulasan pembeli (bintang 1, 2, 3) dari tab Tokped DLP & Tokped HF setiap <strong>jam 10 pagi pada hari kerja (Senin - Sabtu)</strong> di latar belakang dan melaporkannya ke POS Hanmar untuk notifikasi banner.
                     </div>
                     <div id="status-ulasan-tokped-box" style="font-size:11px;color:#374151;background:#fff;border:1px solid #d1d5db;border-radius:6px;padding:8px;margin-bottom:10px;">
                         Status: Belum pernah dipindai
@@ -1145,7 +1145,8 @@
             if (box && status) {
                 box.innerHTML = `
                     <div><strong>Status:</strong> ${status.status}</div>
-                    <div style="margin-top:4px;"><strong>Terakhir dipindai:</strong> ${status.terakhirScanPada || 'Belum'}</div>
+                    <div style="margin-top:4px;"><strong>Jadwal Otomatis:</strong> Setiap jam 10:00 WIB (Hari Kerja)</div>
+                    <div style="margin-top:2px;"><strong>Terakhir dipindai:</strong> ${status.terakhirScanPada || 'Belum'}</div>
                     <div style="margin-top:2px;"><strong>Ulasan Bintang 1-3 Aktif:</strong> ${status.jumlahUlasan}</div>
                 `;
             }

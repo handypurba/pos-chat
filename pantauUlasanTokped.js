@@ -1,4 +1,4 @@
-const { BrowserWindow } = require('electron');
+const { BrowserWindow, app } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -8,12 +8,39 @@ const fs = require('fs');
  * persist:tokped-dlp / persist:tokped-hf yang aktif di laptop karyawan.
  * Mengekstrak ulasan bintang 1, 2, 3 dalam 14 hari terakhir dan melaporkannya
  * ke server Hanmar POS (pos.hanmar.id).
+ *
+ * Jadwal otomatis: Setiap jam 10 pagi pada hari kerja (Senin - Sabtu).
  */
+
+const cachePath = path.join(app ? app.getPath('userData') : __dirname, 'ulasan-cache.json');
 
 let riwayatUlasanTerakhir = [];
 let sedangScanning = false;
 let terakhirScanPada = null;
 let statusTerakhir = 'Belum pernah dipindai';
+let tanggalScanOtomatisTerakhir = null;
+
+// Muat cache saat startup
+try {
+    if (fs.existsSync(cachePath)) {
+        const c = JSON.parse(fs.readFileSync(cachePath, 'utf8'));
+        if (c.statusTerakhir) statusTerakhir = c.statusTerakhir;
+        if (c.terakhirScanPada) terakhirScanPada = new Date(c.terakhirScanPada);
+        if (Array.isArray(c.riwayatUlasanTerakhir)) riwayatUlasanTerakhir = c.riwayatUlasanTerakhir;
+        if (c.tanggalScanOtomatisTerakhir) tanggalScanOtomatisTerakhir = c.tanggalScanOtomatisTerakhir;
+    }
+} catch (e) {}
+
+function simpanCache() {
+    try {
+        fs.writeFileSync(cachePath, JSON.stringify({
+            statusTerakhir,
+            terakhirScanPada: terakhirScanPada ? terakhirScanPada.toISOString() : null,
+            riwayatUlasanTerakhir,
+            tanggalScanOtomatisTerakhir,
+        }, null, 2), 'utf8');
+    } catch (e) {}
+}
 
 function tentukanShopNama(ws) {
     const nama = (ws.nama || '').toUpperCase();
@@ -251,10 +278,12 @@ async function scanSemuaUlasanTokped(workspaces, UA_CHROME) {
         riwayatUlasanTerakhir = semuaUlasan;
         terakhirScanPada = new Date();
         statusTerakhir = `Selesai dipindai (${ringkasanToko.join(', ')}). Total ${semuaUlasan.length} ulasan bintang 1-3.`;
+        simpanCache();
         console.log(`[UlasanTokped] ${statusTerakhir}`);
     } catch (err) {
         console.error('[UlasanTokped] Gagal scan ulasan:', err);
         statusTerakhir = 'Gagal memindai: ' + (err.message || 'Error tidak diketahui');
+        simpanCache();
     } finally {
         sedangScanning = false;
     }
@@ -270,12 +299,22 @@ function ambilUlasanTerbaru() {
     return riwayatUlasanTerakhir;
 }
 
+function ambilTanggalScanOtomatis() {
+    return tanggalScanOtomatisTerakhir;
+}
+
+function setTanggalScanOtomatis(tgl) {
+    tanggalScanOtomatisTerakhir = tgl;
+    simpanCache();
+}
+
 function ambilStatusScan() {
     return {
         sedangScanning,
         terakhirScanPada: terakhirScanPada ? terakhirScanPada.toLocaleTimeString('id-ID') : null,
         status: statusTerakhir,
         jumlahUlasan: riwayatUlasanTerakhir.length,
+        jadwalOtomatis: 'Setiap jam 10:00 WIB pada hari kerja (Senin - Sabtu)',
     };
 }
 
@@ -283,4 +322,6 @@ module.exports = {
     scanSemuaUlasanTokped,
     ambilUlasanTerbaru,
     ambilStatusScan,
+    ambilTanggalScanOtomatis,
+    setTanggalScanOtomatis,
 };
