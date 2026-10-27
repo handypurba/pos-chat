@@ -456,7 +456,18 @@ const aiWaPesanTerakhirDiproses = {};
  * mengisi kotak ketik, karyawan yang baca/edit/klik kirim sendiri (lihat catatan keamanan di
  * pantauChatWa.js). Kegagalan di sini sengaja DIAM-DIAM (try/catch luas) -- fitur ini cuma
  * pelengkap, tidak boleh mengganggu siklus lapor status WA yang sudah jalan normal. */
+// Asisten draf AI HANYA buat tab WA resmi toko (Admin DLP/HF) -- BUKAN semua tab ber-platform
+// 'whatsapp' (ada WA Pribadi, WA Bis, Admin Broad juga, yang TIDAK boleh ikut dibuatkan draf AI
+// buat chat pribadi/internal). Dicocokkan dari NAMA tab (sama seperti bukaTabLeadsOtomatis()),
+// karena id tab bisa beda-beda antar laptop. Ditemukan owner 28 Okt 2026: draf AI nongol juga di
+// tab WA Pribadi -- harus disaring di sini.
+const NAMA_TAB_WA_RESMI = ['admin dlp', 'admin hf'];
+function tabWaResmi(ws) {
+    return NAMA_TAB_WA_RESMI.includes((ws.nama || '').trim().toLowerCase());
+}
+
 async function asistenAiWa(ws, view) {
+    if (!tabWaResmi(ws)) return;
     try {
         const pesan = await pantauChatWa.pesanTerakhirDariPelanggan(view);
         if (!pesan || aiWaPesanTerakhirDiproses[ws.id] === pesan.kunciUnik) return;
