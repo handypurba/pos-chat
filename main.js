@@ -446,6 +446,43 @@ const judulTerakhir = {};
 const viewDimuatPada = {};
 const JEDA_PEMANASAN_SETELAH_LOAD_MS = 45 * 1000;
 
+// Asisten draf balasan AI (owner 27-28 Okt 2026) -- kunciUnik pesan TERAKHIR yang sudah dikirim
+// ke server per tab WA, supaya tidak kirim ulang & minta draf lagi untuk pesan yang sama di
+// siklus polling berikutnya (laporStatusChatHub jalan tiap ~30 detik).
+const aiWaPesanTerakhirDiproses = {};
+
+/** Kirim pesan pelanggan terbaru (kalau ada & baru) ke server buat dibuatkan draf AI, lalu kalau
+ * draf-nya sudah siap, isikan ke kotak ketik. TIDAK PERNAH mengirim WA secara otomatis -- cuma
+ * mengisi kotak ketik, karyawan yang baca/edit/klik kirim sendiri (lihat catatan keamanan di
+ * pantauChatWa.js). Kegagalan di sini sengaja DIAM-DIAM (try/catch luas) -- fitur ini cuma
+ * pelengkap, tidak boleh mengganggu siklus lapor status WA yang sudah jalan normal. */
+async function asistenAiWa(ws, view) {
+    try {
+        const pesan = await pantauChatWa.pesanTerakhirDariPelanggan(view);
+        if (!pesan || aiWaPesanTerakhirDiproses[ws.id] === pesan.kunciUnik) return;
+        aiWaPesanTerakhirDiproses[ws.id] = pesan.kunciUnik;
+
+        const token = muatTokenChatHub();
+        if (!token) return;
+        const cfg = muatConfig();
+        const headers = { Authorization: `Bearer ${token}`, Accept: 'application/json' };
+
+        await requestJson('POST', `${cfg.apiBaseUrl}/api/chathub/pesan-masuk`, headers, {
+            nama_tab: ws.nama,
+            kontak_nama: pesan.namaPengirim || 'Tidak diketahui',
+            teks: pesan.teks,
+        });
+
+        const q = new URLSearchParams({ nama_tab: ws.nama, kontak_nama: pesan.namaPengirim || 'Tidak diketahui' });
+        const hasil = await ambilJson(`${cfg.apiBaseUrl}/api/chathub/draf?${q}`, headers);
+        if (hasil && hasil.draf) {
+            await pantauChatWa.isiKotakKetikWa(view, hasil.draf);
+        }
+    } catch {
+        // diam-diam -- lihat catatan di atas
+    }
+}
+
 /** Banyak web chat (WhatsApp Web, dkk) menaruh jumlah pesan belum dibaca di AWAL judul tab,
  * mis. "(3) WhatsApp" — pola ini dipakai luas jadi dijadikan patokan umum untuk 3 platform
  * sekaligus, tanpa perlu tahu detail tampilan situsnya. */
@@ -849,6 +886,7 @@ async function laporStatusChatHub() {
             const { belumDibalas: daftar, kontakTerlihat: daftarTerlihat } = await pantauChatWa.bacaBelumDibalasWa(view, ws.id);
             daftar.forEach((d) => belumDibalas.push({ workspace_id: ws.id, ...d }));
             daftarTerlihat.forEach((item) => kontakTerlihat.push({ workspace_id: ws.id, kontak_nama: item.nama, waktu_pesan_masuk: item.waktu_pesan_masuk }));
+            await asistenAiWa(ws, view);
         } else if (platform === 'shopee' && status === 'terhubung') {
             const { belumDibalas: daftarShopee, kontakTerlihat: daftarTerlihatShopee } = await pantauChatWa.bacaBelumDibalasShopee(view, ws.id);
             daftarShopee.forEach((d) => belumDibalas.push({ workspace_id: ws.id, ...d }));

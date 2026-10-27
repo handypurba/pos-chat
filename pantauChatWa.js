@@ -539,4 +539,92 @@ async function bacaStatusKoneksi(view, platform) {
     }
 }
 
-module.exports = { bacaBelumDibalasWa, bacaBelumDibalasShopee, bacaBelumDibalasTokped, bacaStatusKoneksi };
+// ===== Asisten draf balasan AI (owner minta 27-28 Okt 2026) =====
+// Riset struktur HTML dilakukan manual bareng owner 28 Okt 2026 (outerHTML asli dikirim lewat
+// chat, bukan tebakan). 2 penanda stabil yang dipakai (bukan nama class acak WhatsApp Web):
+//
+// 1. [data-pre-plain-text] -- ada di SETIAP gelembung pesan teks, isinya format baku WhatsApp
+//    "[jam, tanggal] Nama Pengirim: " -- dari situ kita dapat JAM dan NAMA PENGIRIM sekaligus,
+//    tanpa perlu baca header percakapan terpisah.
+// 2. [data-testid="msg-meta"] -- cuma ADA di pesan yang KITA kirim (ikon centang kirim/dibaca).
+//    Pesan dari lawan chat TIDAK punya elemen ini sama sekali -- cara paling pasti bedakan
+//    "pesan masuk dari pelanggan" vs "pesan yang sudah kita balas", tanpa perlu tahu nama akun
+//    sendiri.
+//
+// Teks pesan sendiri ada di [data-testid="selectable-text"] di dalam tiap gelembung.
+const SKRIP_PESAN_TERAKHIR_WA = `
+(function () {
+    var bubbles = document.querySelectorAll('[data-pre-plain-text]');
+    if (!bubbles.length) return null;
+    var terakhir = bubbles[bubbles.length - 1];
+    var dariKita = !!terakhir.closest('[role="row"]')?.querySelector('[data-testid="msg-meta"]')
+        || !!terakhir.parentElement?.querySelector('[data-testid="msg-meta"]');
+    var teksEl = terakhir.querySelector('[data-testid="selectable-text"]');
+    if (!teksEl) return null; // bukan pesan teks (gambar/video/dsb) -- dilewati, AI cuma balas teks
+
+    var meta = terakhir.getAttribute('data-pre-plain-text') || '';
+    var cocok = meta.match(/^\\[(.+?)\\]\\s*(.+?):\\s*$/);
+
+    return {
+        teks: teksEl.textContent || '',
+        dariKita: dariKita,
+        namaPengirim: cocok ? cocok[2] : null,
+        kunciUnik: meta + '|' + (teksEl.textContent || '').slice(0, 50),
+    };
+})()
+`;
+
+/** Pesan TERAKHIR di percakapan yang SEDANG TERBUKA di tab ini, kalau itu dari pelanggan (bukan
+ * dari kita) dan berupa teks. Null kalau tidak ada percakapan terbuka / pesan terakhir dari kita
+ * sendiri / bukan teks. */
+async function pesanTerakhirDariPelanggan(view) {
+    try {
+        const hasil = await view.webContents.executeJavaScript(SKRIP_PESAN_TERAKHIR_WA);
+        if (!hasil || hasil.dariKita || !hasil.teks.trim()) return null;
+
+        return { teks: hasil.teks.trim(), namaPengirim: hasil.namaPengirim, kunciUnik: hasil.kunciUnik };
+    } catch {
+        return null;
+    }
+}
+
+/** Isi draf ke kotak ketik WA Web -- TIDAK PERNAH mengirim otomatis, cuma mengisi teksnya,
+ * karyawan yang baca/edit/klik kirim sendiri (lihat kesepakatan dgn owner 27 Okt 2026 soal
+ * keamanan akun WA: mengisi kotak ketik itu operasi LOKAL di layar, tidak pernah dikirim ke
+ * server WhatsApp sampai ada yang benar-benar klik kirim -- beda total dari auto-send).
+ *
+ * document.execCommand('insertText', ...) dipakai (bukan set .textContent/.innerText langsung)
+ * karena kotak ketik WA Web adalah editor rich-text (Lexical, dikonfirmasi dari atribut
+ * data-lexical-editor="true" di outerHTML asli) -- cara itu memicu event input NATIF yang
+ * dikenali Lexical, sedangkan ubah teks langsung lewat DOM tidak akan tersinkron ke state
+ * internalnya (kotak akan kelihatan terisi tapi WA Web tidak "menganggap" ada isinya).
+ *
+ * Jeda acak sebelum mengisi (owner minta 27 Okt 2026, supaya tidak terlihat seperti bot) --
+ * pola sama dengan jedaAcak() di broadcast.js, walau di sini risikonya jauh lebih kecil (tidak
+ * pernah terkirim ke server WA), tetap dipasang sebagai kehati-hatian tambahan. */
+async function isiKotakKetikWa(view, teks) {
+    const jedaMs = Math.floor(400 + Math.random() * 900);
+    await new Promise((resolve) => setTimeout(resolve, jedaMs));
+
+    const teksAman = JSON.stringify(teks);
+    const skrip = `
+    (function () {
+        var kotak = document.querySelector('[data-testid="conversation-compose-box-input"]');
+        if (!kotak) return false;
+        kotak.focus();
+        document.execCommand('selectAll', false, null);
+        document.execCommand('insertText', false, ${teksAman});
+        return true;
+    })()
+    `;
+    try {
+        return !!(await view.webContents.executeJavaScript(skrip));
+    } catch {
+        return false;
+    }
+}
+
+module.exports = {
+    bacaBelumDibalasWa, bacaBelumDibalasShopee, bacaBelumDibalasTokped, bacaStatusKoneksi,
+    pesanTerakhirDariPelanggan, isiKotakKetikWa,
+};
