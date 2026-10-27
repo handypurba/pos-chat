@@ -546,10 +546,15 @@ async function bacaStatusKoneksi(view, platform) {
 // 1. [data-pre-plain-text] -- ada di SETIAP gelembung pesan teks, isinya format baku WhatsApp
 //    "[jam, tanggal] Nama Pengirim: " -- dari situ kita dapat JAM dan NAMA PENGIRIM sekaligus,
 //    tanpa perlu baca header percakapan terpisah.
-// 2. [data-testid="msg-meta"] -- cuma ADA di pesan yang KITA kirim (ikon centang kirim/dibaca).
-//    Pesan dari lawan chat TIDAK punya elemen ini sama sekali -- cara paling pasti bedakan
-//    "pesan masuk dari pelanggan" vs "pesan yang sudah kita balas", tanpa perlu tahu nama akun
-//    sendiri.
+// 2. [data-id] di salah satu elemen leluhur bubble (±9 level ke atas) -- awalnya dikira
+//    [data-testid="msg-meta"] yang jadi penanda "pesan kita", TERNYATA SALAH (ditemukan owner +
+//    outerHTML asli 28 Okt 2026): msg-meta ADA DI SEMUA bubble (dipakai juga buat tampilkan jam
+//    di pesan MASUK, cuma pesan KELUAR yang nambahin ikon centang di dalamnya). Penanda yang
+//    benar-benar stabil: value data-id pesan yang KITA KIRIM SENDIRI selalu diawali "3EB0" (id
+//    pesan dibuatkan oleh klien pengirim sendiri -- pola umum WhatsApp), sedangkan pesan MASUK
+//    dari lawan chat data-id-nya hex 32 karakter TANPA awalan itu (dibuat perangkat/server
+//    pengirim). Dikonfirmasi lewat 2 contoh nyata (outgoing "3EB0E195E9221D4E0A48DE" vs incoming
+//    "ACA859194CA0F6019885CED6B7EF9AB0"), BUKAN tebakan.
 //
 // Teks pesan sendiri ada di [data-testid="selectable-text"] di dalam tiap gelembung.
 const SKRIP_PESAN_TERAKHIR_WA = `
@@ -557,8 +562,9 @@ const SKRIP_PESAN_TERAKHIR_WA = `
     var bubbles = document.querySelectorAll('[data-pre-plain-text]');
     if (!bubbles.length) return null;
     var terakhir = bubbles[bubbles.length - 1];
-    var dariKita = !!terakhir.closest('[role="row"]')?.querySelector('[data-testid="msg-meta"]')
-        || !!terakhir.parentElement?.querySelector('[data-testid="msg-meta"]');
+    var elBerId = terakhir.closest('[data-id]');
+    var dataId = elBerId ? (elBerId.getAttribute('data-id') || '') : '';
+    var dariKita = /^3EB0/i.test(dataId);
     var teksEl = terakhir.querySelector('[data-testid="selectable-text"]');
     if (!teksEl) return null; // bukan pesan teks (gambar/video/dsb) -- dilewati, AI cuma balas teks
 
@@ -612,7 +618,15 @@ async function isiKotakKetikWa(view, teks) {
         var kotak = document.querySelector('[data-testid="conversation-compose-box-input"]');
         if (!kotak) return false;
         kotak.focus();
-        document.execCommand('selectAll', false, null);
+        // document.execCommand('selectAll', ...) kadang gagal pilih isi lama kalau fokus belum
+        // "settle" (race condition) -- draf baru numpuk di belakang draf lama alih-alih
+        // menggantikannya (ditemukan owner 28 Okt 2026). Diganti pakai Selection/Range API
+        // langsung, pasti pilih SELURUH isi kotak apa pun kondisi fokusnya.
+        var range = document.createRange();
+        range.selectNodeContents(kotak);
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
         document.execCommand('insertText', false, ${teksAman});
         return true;
     })()
