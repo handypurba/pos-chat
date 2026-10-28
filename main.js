@@ -29,6 +29,25 @@ if (!dapatLock) {
     process.exit(0);
 }
 
+/** Jaring pengaman global -- diminta owner 28 Okt 2026 setelah laporan "aplikasi suka tutup
+ * sendiri" pasca update v1.6.14. Root cause: TANPA ini, satu error kecil saja yang muncul di
+ * salah satu proses pemantauan latar belakang (banyak sekali setInterval/setTimeout jalan terus
+ * di app ini -- pantau judul tab, lapor status, auto-buka tab Leads, dst) langsung mematikan
+ * SELURUH proses Node.js/Electron tanpa pesan apa pun (perilaku bawaan Node kalau exception tidak
+ * ditangkap) -- persis gejala "hilang begitu saja, tidak ada dialog". Sekarang errornya ditangkap
+ * dan dicatat ke file log supaya aplikasi tetap jalan DAN penyebabnya bisa dilacak kalau terulang. */
+function catatErrorFatal(label, err) {
+    try {
+        const baris = `[${new Date().toISOString()}] ${label}: ${err?.stack || err}\n`;
+        fs.appendFileSync(path.join(app.getPath('userData'), 'error-fatal.log'), baris);
+    } catch {
+        // kalau nulis log pun gagal (mis. disk penuh), biarkan saja -- jangan sampai proses
+        // pencatatan error malah bikin error baru.
+    }
+}
+process.on('uncaughtException', (err) => catatErrorFatal('uncaughtException', err));
+process.on('unhandledRejection', (err) => catatErrorFatal('unhandledRejection', err));
+
 /** Migrasi otomatis sesi dari userData app versi sebelumnya ("Hanmar Chat Hub", nama app lama
  * sebelum rename ke "POS Chat" 23 Agustus 2026) — supaya WA/Shopee/Tokped/broadcast TIDAK perlu
  * scan ulang / login ulang di laptop mana pun begitu update ini sampai ke sana (appId berubah
