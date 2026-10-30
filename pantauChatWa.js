@@ -659,6 +659,7 @@ async function isiKotakKetikWa(view, teks) {
                 cancelable: true
             });
             kotak.dispatchEvent(pasteEvt);
+            kotak.dispatchEvent(new InputEvent('input', { bubbles: true, cancelable: true, composed: true }));
         } catch (e) {}
 
         // Fallback kalau paste event tidak diproses Lexical: masukkan baris satu-persatu

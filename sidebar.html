@@ -1124,17 +1124,18 @@
         const tampilOnline = chkProdukOnline.checked;
         const satuanList = p.satuan || [];
 
-        let teks = p.nama + '\n';
-        satuanList.forEach((s) => {
-            if (satuanList.length > 1) {
-                teks += '\n' + String(s.nama || 'SATUAN').toUpperCase() + ':\n';
-            }
+        // Ambil satuan utama (is_default atau yang pertama) agar tidak dobel posting dengan satuan Dus/turunan
+        const s = satuanList.find((u) => u.is_default) || satuanList[0];
+
+        let teks = p.nama + '\n\n';
+        if (s) {
+            teks += String(s.nama || 'SATUAN').toUpperCase() + ':\n';
             (s.harga_tier || []).forEach((t) => {
                 if ((t.kode === 'reseller' && !tampilReseller) || (t.kode === 'grosir' && !tampilGrosir)) return;
                 teks += '- ' + t.label + ': ' + fmtRp(t.harga) + '\n';
             });
-            if (tampilOnline) {
-                (s.harga_online || []).forEach((o) => {
+            if (tampilOnline && (s.harga_online || []).length > 0) {
+                s.harga_online.forEach((o) => {
                     const bagian = [];
                     if (o.satuan !== null && o.satuan !== undefined) bagian.push('Satuan ' + fmtRp(o.satuan));
                     if (o.lusin !== null && o.lusin !== undefined) bagian.push('Lusin ' + fmtRp(o.lusin));
@@ -1144,7 +1145,13 @@
                     }
                 });
             }
-        });
+        }
+
+        const linkWebstore = p.url_webstore || (p.slug ? ('https://hanmar.id/produk/' + p.slug) : null);
+        if (linkWebstore) {
+            teks += '\nInfo & order: ' + linkWebstore + '\n';
+        }
+
         return teks.trim();
     }
 
@@ -1155,6 +1162,10 @@
         (daftarBanding || []).forEach((b) => {
             teks += '- ' + b.merk + ' (' + b.nama + '): ' + fmtRp(b.harga) + '\n';
         });
+        const linkWebstore = p.url_webstore || (p.slug ? ('https://hanmar.id/produk/' + p.slug) : null);
+        if (linkWebstore) {
+            teks += '\nInfo & order: ' + linkWebstore + '\n';
+        }
         return teks.trim();
     }
 
