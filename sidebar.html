@@ -123,6 +123,62 @@
         border-radius: 8px; background: rgba(255,255,255,0.14); transition: background 0.15s;
     }
     #user-bawah .btn-alat-bantu:hover { background: rgba(255,255,255,0.24); }
+    #user-bawah .baris-tombol-bawah { display: flex; gap: 6px; align-items: center; justify-content: center; }
+
+    #modal-produk-overlay {
+        display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 55;
+        align-items: center; justify-content: center;
+    }
+    #modal-produk-overlay.tampil { display: flex; }
+    #modal-produk {
+        background: #fff; border-radius: 14px; width: 480px; max-height: 82vh;
+        display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 12px 32px rgba(0,0,0,0.25);
+    }
+    #modal-produk .header-produk {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 12px 16px; border-bottom: 1px solid #e5e7eb; background: #f9fafb;
+    }
+    #modal-produk .header-produk h3 { font-size: 14px; color: #111827; display: flex; align-items: center; gap: 6px; }
+    #modal-produk .baris-cari-produk {
+        display: flex; gap: 6px; padding: 10px 14px; border-bottom: 1px solid #e5e7eb; background: #fff;
+    }
+    #modal-produk .baris-cari-produk input {
+        flex: 1; padding: 7px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 12px;
+    }
+    #modal-produk .baris-cari-produk select {
+        padding: 7px 8px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 12px; background: #fff;
+    }
+    #daftar-produk-modal {
+        flex: 1; overflow-y: auto; padding: 6px 0; min-height: 240px; max-height: 60vh;
+    }
+    .kartu-produk-wa {
+        display: flex; gap: 10px; padding: 10px 14px; border-bottom: 1px solid #f3f4f6; align-items: flex-start;
+    }
+    .kartu-produk-wa:hover { background: #f9fafb; }
+    .kartu-produk-wa .foto-produk {
+        width: 48px; height: 48px; border-radius: 8px; border: 1px solid #e5e7eb; object-fit: cover;
+        background: #f3f4f6; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+        font-size: 18px; color: #9ca3af;
+    }
+    .kartu-produk-wa .info-produk { flex: 1; min-width: 0; }
+    .kartu-produk-wa .nama-produk { font-size: 12.5px; font-weight: 600; color: #111827; line-height: 1.3; }
+    .kartu-produk-wa .meta-produk { font-size: 11px; color: #6b7280; margin-top: 2px; }
+    .kartu-produk-wa .tier-produk {
+        font-size: 11px; color: #374151; margin-top: 4px; background: #f8fafc;
+        border: 1px solid #e2e8f0; border-radius: 6px; padding: 4px 7px; line-height: 1.4;
+    }
+    .kartu-produk-wa .aksi-produk {
+        display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; align-items: stretch;
+    }
+    .btn-kirim-produk-wa {
+        background: #ea580c; color: #fff; border: none; border-radius: 6px; padding: 5px 10px;
+        font-size: 11px; font-weight: 600; cursor: pointer; white-space: nowrap;
+    }
+    .btn-kirim-produk-wa:hover { background: #c2410c; }
+    .btn-kirim-produk-wa.sekunder {
+        background: #fff; color: #374151; border: 1px solid #d1d5db; font-weight: 500;
+    }
+    .btn-kirim-produk-wa.sekunder:hover { background: #f3f4f6; }
 
     #modal-alat-bantu-overlay {
         display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 50;
@@ -382,6 +438,26 @@
     </div>
 </div>
 
+<div id="modal-produk-overlay">
+    <div id="modal-produk">
+        <div class="header-produk">
+            <h3>🛍️ Kirim Produk ke Chat WA</h3>
+            <button class="aksi sekunder kecil" id="btn-tutup-produk" style="padding:4px 10px;font-size:11px;">Tutup</button>
+        </div>
+        <div class="baris-cari-produk">
+            <input type="text" id="input-cari-produk-wa" placeholder="Cari nama / kode barang (mis. BT 90y)...">
+            <select id="filter-toko-produk-wa">
+                <option value="">Semua Toko</option>
+                <option value="DLP">DLP</option>
+                <option value="Hanmar Food">Hanmar Food</option>
+            </select>
+        </div>
+        <div id="daftar-produk-modal">
+            <p style="font-size:12px;color:#9ca3af;text-align:center;padding:24px 12px;">Memuat daftar produk...</p>
+        </div>
+    </div>
+</div>
+
 <div id="broadcast-panel">
     <div id="kartu-statistik"></div>
 
@@ -581,7 +657,10 @@
     window.chatHub.onLoginBerhasil((user) => {
         loginOverlay.classList.remove('tampil');
         userBawah.innerHTML = `
-            <div class="btn-alat-bantu" id="btn-alat-bantu" title="Balasan cepat, pengingat, jangan ganggu">🛠</div>
+            <div class="baris-tombol-bawah">
+                <div class="btn-alat-bantu" id="btn-kirim-produk-wa-buka" title="Kirim / rekomendasi produk Hanmar POS ke chat WA">🛍️</div>
+                <div class="btn-alat-bantu" id="btn-alat-bantu" title="Balasan cepat, pengingat, jangan ganggu">🛠</div>
+            </div>
             <div class="nama">👤 ${user.nama}</div>
             <div class="btn-logout-kecil" id="btn-logout-chathub">Logout</div>
         `;
@@ -590,6 +669,7 @@
             if (!confirm('Logout dari POS Chat? Tab-tab chat akan ditutup (sesi WA/Shopee/Tokped di tiap tab tidak ikut hilang).')) return;
             await window.chatHub.logoutChatHub();
         });
+        document.getElementById('btn-kirim-produk-wa-buka').addEventListener('click', bukaModalProduk);
         document.getElementById('btn-alat-bantu').addEventListener('click', bukaModalAlatBantu);
     });
 
@@ -915,6 +995,106 @@
         tutupModalTambah();
         toast(`Tab "${nama}" ditambahkan.`, 'sukses');
     });
+
+    // ================= Modal 🛍️ Kirim Produk ke Chat WA =================
+    const modalProdukOverlay = document.getElementById('modal-produk-overlay');
+    const inputCariProdukWa = document.getElementById('input-cari-produk-wa');
+    const filterTokoProdukWa = document.getElementById('filter-toko-produk-wa');
+    const daftarProdukModalEl = document.getElementById('daftar-produk-modal');
+    let timerCariProdukWa = null;
+
+    function bukaModalProduk() {
+        window.chatHub.sembunyikanViewModal();
+        modalProdukOverlay.classList.add('tampil');
+        inputCariProdukWa.focus();
+        muatDaftarProdukWa();
+    }
+
+    function tutupModalProduk() {
+        modalProdukOverlay.classList.remove('tampil');
+        window.chatHub.tampilkanViewModal();
+    }
+
+    document.getElementById('btn-tutup-produk').addEventListener('click', tutupModalProduk);
+    modalProdukOverlay.addEventListener('click', (e) => {
+        if (e.target === modalProdukOverlay) tutupModalProduk();
+    });
+
+    inputCariProdukWa.addEventListener('input', () => {
+        clearTimeout(timerCariProdukWa);
+        timerCariProdukWa = setTimeout(muatDaftarProdukWa, 250);
+    });
+    filterTokoProdukWa.addEventListener('change', muatDaftarProdukWa);
+
+    function escHtml(s) {
+        return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    async function muatDaftarProdukWa() {
+        const q = inputCariProdukWa.value.trim();
+        const toko = filterTokoProdukWa.value;
+        daftarProdukModalEl.innerHTML = '<p style="font-size:12px;color:#9ca3af;text-align:center;padding:24px 12px;">Memuat produk...</p>';
+        try {
+            const items = await window.chatHub.cariProdukPos({ q, toko });
+            if (!items || items.length === 0) {
+                daftarProdukModalEl.innerHTML = '<p style="font-size:12px;color:#9ca3af;text-align:center;padding:24px 12px;">Produk tidak ditemukan.</p>';
+                return;
+            }
+            daftarProdukModalEl.innerHTML = '';
+            items.forEach((p) => {
+                const baris = document.createElement('div');
+                baris.className = 'kartu-produk-wa';
+                const tierHtml = (p.tiers || []).map((t) => `<div>• <strong>${escHtml(t.label)}:</strong> ${escHtml(t.harga_fmt)}</div>`).join('');
+                const warnaStok = p.stok_pcs > 0 ? '#059669' : '#dc2626';
+                baris.innerHTML = `
+                    ${p.foto_url
+                        ? `<img class="foto-produk" src="${escHtml(p.foto_url)}" alt="">`
+                        : `<div class="foto-produk">📦</div>`}
+                    <div class="info-produk">
+                        <div class="nama-produk">${escHtml(p.nama)}</div>
+                        <div class="meta-produk">
+                            <span>${escHtml(p.kode || '-')}</span> ·
+                            <span>${escHtml(p.toko || '-')}</span> ·
+                            <strong style="color:${warnaStok};">Stok: ${escHtml(p.stok_label)}</strong>
+                        </div>
+                        ${tierHtml ? `<div class="tier-produk">${tierHtml}</div>` : ''}
+                    </div>
+                    <div class="aksi-produk">
+                        <button class="btn-kirim-produk-wa" data-aksi="kirim-teks">🛍️ Kirim</button>
+                        ${p.foto_url ? `<button class="btn-kirim-produk-wa sekunder" data-aksi="kirim-foto" title="Isi teks ke kotak ketik + salin foto ke clipboard (tinggal Ctrl+V di WA)">📷 + Foto</button>` : ''}
+                    </div>
+                `;
+                baris.querySelector('[data-aksi="kirim-teks"]').addEventListener('click', async () => {
+                    tutupModalProduk();
+                    const res = await window.chatHub.kirimProdukKeChat({ teks: p.teks_wa, fotoUrl: p.foto_url, salinFoto: false });
+                    if (res.berhasil) {
+                        toast(`Info "${p.nama}" dimasukkan ke kotak chat WA.`, 'sukses');
+                    } else {
+                        toast(res.alasan || 'Teks produk disalin ke clipboard (Ctrl+V di chat).', 'info');
+                    }
+                });
+                const btnFoto = baris.querySelector('[data-aksi="kirim-foto"]');
+                if (btnFoto) {
+                    btnFoto.addEventListener('click', async () => {
+                        btnFoto.disabled = true;
+                        btnFoto.textContent = '⏳...';
+                        const res = await window.chatHub.kirimProdukKeChat({ teks: p.teks_wa, fotoUrl: p.foto_url, salinFoto: true });
+                        tutupModalProduk();
+                        if (res.fotoTersalin && res.berhasil) {
+                            toast('Teks terisi & foto disalin! Tekan Ctrl+V di kotak chat WA untuk lampirkan foto.', 'sukses');
+                        } else if (res.fotoTersalin) {
+                            toast('Foto produk disalin ke clipboard (tekan Ctrl+V di chat WA).', 'sukses');
+                        } else {
+                            toast(res.alasan || 'Teks produk dimasukkan ke chat.', 'info');
+                        }
+                    });
+                }
+                daftarProdukModalEl.appendChild(baris);
+            });
+        } catch (err) {
+            daftarProdukModalEl.innerHTML = `<p style="font-size:12px;color:#dc2626;text-align:center;padding:24px 12px;">Gagal memuat produk: ${escHtml(err.message)}</p>`;
+        }
+    }
 
     // ================= Modal Alat Bantu: Balasan Cepat, Pengingat, Jangan Ganggu =================
     const modalAlatBantuOverlay = document.getElementById('modal-alat-bantu-overlay');

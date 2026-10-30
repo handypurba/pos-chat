@@ -1,4 +1,4 @@
-const { app, BrowserWindow, BrowserView, ipcMain, dialog, shell } = require('electron');
+const { app, BrowserWindow, BrowserView, ipcMain, dialog, shell, clipboard, nativeImage } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const https = require('https');
@@ -1299,6 +1299,79 @@ ipcMain.handle('scan-ulasan-tokped-manual', async () => {
     return hasil;
 });
 ipcMain.handle('status-ulasan-tokped-muat', () => pantauUlasanTokped.ambilStatusScan());
+
+// --- 🛍️ Kirim Produk dari Hanmar POS ke Chat WA Aktif (owner minta 30 Okt 2026) ---
+function unduhBuffer(url) {
+    return new Promise((resolve, reject) => {
+        const lib = url.startsWith('https:') ? https : http;
+        const req = lib.get(url, { ca: CA_LENGKAP }, (res) => {
+            if (res.statusCode < 200 || res.statusCode >= 300) {
+                reject(new Error(`Gagal unduh foto, status ${res.statusCode}`));
+                return;
+            }
+            const chunks = [];
+            res.on('data', (c) => chunks.push(c));
+            res.on('end', () => resolve(Buffer.concat(chunks)));
+        });
+        req.on('error', reject);
+        req.setTimeout(15000, () => req.destroy(new Error('Timeout unduh foto')));
+    });
+}
+
+ipcMain.handle('produk-pos-cari', async (event, { q = '', toko = '' } = {}) => {
+    const token = muatTokenChatHub();
+    if (!token) throw new Error('Belum login POS Chat.');
+    const cfg = muatConfig();
+    const params = new URLSearchParams();
+    if (q) params.set('q', q);
+    if (toko) params.set('toko', toko);
+    const qs = params.toString();
+    const url = `${cfg.apiBaseUrl}/api/chathub/produk${qs ? '?' + qs : ''}`;
+    const hasil = await requestJson('GET', url, {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/json',
+    });
+    return hasil?.produk || [];
+});
+
+ipcMain.handle('produk-kirim-ke-chat', async (event, { teks, fotoUrl, salinFoto = false } = {}) => {
+    let fotoTersalin = false;
+    if (salinFoto && fotoUrl) {
+        try {
+            const buf = await unduhBuffer(fotoUrl);
+            const img = nativeImage.createFromBuffer(buf);
+            if (!img.isEmpty()) {
+                clipboard.writeImage(img);
+                fotoTersalin = true;
+            }
+        } catch (err) {
+            console.warn('[KirimProduk] Gagal menyalin foto ke clipboard:', err.message);
+        }
+    }
+
+    const view = activeId ? views[activeId] : null;
+    if (!view || view.webContents.isDestroyed()) {
+        if (!fotoTersalin && teks) clipboard.writeText(teks);
+        return { berhasil: false, alasan: 'Buka tab chat WhatsApp dulu, lalu klik Kirim.', disalinKeClipboard: true, fotoTersalin };
+    }
+
+    // Pastikan BrowserView aktif kembali terpasang sebelum kita isi kotak ketik & fokuskan
+    mainWindow?.setBrowserView(view);
+    aturUkuranView(view);
+    view.webContents.focus();
+
+    const terisi = teks ? await pantauChatWa.isiKotakKetikWa(view, teks) : false;
+    if (!terisi && teks && !fotoTersalin) {
+        clipboard.writeText(teks);
+    }
+
+    return {
+        berhasil: terisi,
+        fotoTersalin,
+        disalinKeClipboard: !terisi,
+        alasan: terisi ? null : 'Pastikan ada ruang obrolan WhatsApp yang sedang terbuka (teks sudah disalin ke clipboard).',
+    };
+});
 
 ipcMain.handle('kontak-daftar', () => kontak.muatSemua());
 
