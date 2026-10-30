@@ -131,54 +131,89 @@
     }
     #modal-produk-overlay.tampil { display: flex; }
     #modal-produk {
-        background: #fff; border-radius: 14px; width: 480px; max-height: 82vh;
+        background: #f9fafb; border-radius: 14px; width: 580px; max-width: 92vw; max-height: 86vh;
         display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 12px 32px rgba(0,0,0,0.25);
     }
     #modal-produk .header-produk {
         display: flex; align-items: center; justify-content: space-between;
-        padding: 12px 16px; border-bottom: 1px solid #e5e7eb; background: #f9fafb;
+        padding: 12px 16px; border-bottom: 1px solid #e5e7eb; background: #fff;
     }
     #modal-produk .header-produk h3 { font-size: 14px; color: #111827; display: flex; align-items: center; gap: 6px; }
+    #modal-produk .baris-checklist-produk {
+        display: flex; flex-wrap: wrap; align-items: center; gap: 14px;
+        padding: 8px 16px; border-bottom: 1px solid #e5e7eb; background: #fff; font-size: 11.5px; color: #374151;
+    }
+    #modal-produk .baris-checklist-produk label {
+        display: flex; align-items: center; gap: 5px; cursor: pointer; user-select: none;
+    }
+    #modal-produk .baris-checklist-produk input[type="checkbox"] {
+        width: auto; margin: 0; cursor: pointer;
+    }
     #modal-produk .baris-cari-produk {
-        display: flex; gap: 6px; padding: 10px 14px; border-bottom: 1px solid #e5e7eb; background: #fff;
+        display: flex; gap: 6px; padding: 10px 16px; border-bottom: 1px solid #e5e7eb; background: #fff;
     }
     #modal-produk .baris-cari-produk input {
-        flex: 1; padding: 7px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 12px;
+        flex: 1; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 9px; font-size: 12.5px;
     }
     #modal-produk .baris-cari-produk select {
-        padding: 7px 8px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 12px; background: #fff;
+        padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 9px; font-size: 12px; background: #fff;
     }
     #daftar-produk-modal {
-        flex: 1; overflow-y: auto; padding: 6px 0; min-height: 240px; max-height: 60vh;
+        flex: 1; overflow-y: auto; padding: 10px 14px; min-height: 260px; max-height: 64vh;
+        display: flex; flex-direction: column; gap: 10px;
     }
     .kartu-produk-wa {
-        display: flex; gap: 10px; padding: 10px 14px; border-bottom: 1px solid #f3f4f6; align-items: flex-start;
+        background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px 14px;
     }
-    .kartu-produk-wa:hover { background: #f9fafb; }
+    .kartu-produk-wa .atas-produk {
+        display: flex; gap: 10px; align-items: flex-start;
+    }
     .kartu-produk-wa .foto-produk {
-        width: 48px; height: 48px; border-radius: 8px; border: 1px solid #e5e7eb; object-fit: cover;
+        width: 46px; height: 46px; border-radius: 8px; border: 1px solid #e5e7eb; object-fit: cover;
         background: #f3f4f6; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
         font-size: 18px; color: #9ca3af;
     }
     .kartu-produk-wa .info-produk { flex: 1; min-width: 0; }
-    .kartu-produk-wa .nama-produk { font-size: 12.5px; font-weight: 600; color: #111827; line-height: 1.3; }
-    .kartu-produk-wa .meta-produk { font-size: 11px; color: #6b7280; margin-top: 2px; }
-    .kartu-produk-wa .tier-produk {
-        font-size: 11px; color: #374151; margin-top: 4px; background: #f8fafc;
-        border: 1px solid #e2e8f0; border-radius: 6px; padding: 4px 7px; line-height: 1.4;
+    .kartu-produk-wa .nama-produk { font-size: 13px; font-weight: 600; color: #111827; line-height: 1.3; }
+    .kartu-produk-wa .meta-produk { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+    .kartu-produk-wa .badge-stok {
+        display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 600;
     }
-    .kartu-produk-wa .aksi-produk {
-        display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; align-items: stretch;
+    .kartu-produk-wa .badge-stok.aman { background: #dcfce7; color: #15803d; }
+    .kartu-produk-wa .badge-stok.menipis { background: #fee2e2; color: #b91c1c; }
+    .kartu-produk-wa .tabel-tier {
+        width: 100%; border-collapse: collapse; font-size: 11.5px; margin-top: 6px;
     }
+    .kartu-produk-wa .tabel-tier tr { border-top: 1px solid #f3f4f6; }
+    .kartu-produk-wa .tabel-tier tr:first-child { border-top: none; }
+    .kartu-produk-wa .tabel-tier td { padding: 4px 0; }
+    .kartu-produk-wa .kaki-produk {
+        display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px;
+        margin-top: 10px; padding-top: 8px; border-top: 1px solid #f3f4f6;
+    }
+    .btn-link-aksi {
+        background: none; border: none; font-size: 11.5px; font-weight: 600; cursor: pointer; padding: 2px 4px;
+    }
+    .btn-link-aksi:hover { text-decoration: underline; }
     .btn-kirim-produk-wa {
-        background: #ea580c; color: #fff; border: none; border-radius: 6px; padding: 5px 10px;
-        font-size: 11px; font-weight: 600; cursor: pointer; white-space: nowrap;
+        background: #16a34a; color: #fff; border: none; border-radius: 7px; padding: 5px 11px;
+        font-size: 11.5px; font-weight: 600; cursor: pointer; white-space: nowrap;
     }
-    .btn-kirim-produk-wa:hover { background: #c2410c; }
+    .btn-kirim-produk-wa:hover { background: #15803d; }
     .btn-kirim-produk-wa.sekunder {
         background: #fff; color: #374151; border: 1px solid #d1d5db; font-weight: 500;
     }
     .btn-kirim-produk-wa.sekunder:hover { background: #f3f4f6; }
+
+    #modal-banding-produk-overlay {
+        display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 60;
+        align-items: center; justify-content: center;
+    }
+    #modal-banding-produk-overlay.tampil { display: flex; }
+    #modal-banding-produk {
+        background: #fff; border-radius: 12px; width: 420px; max-width: 90vw; padding: 16px;
+        box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+    }
 
     #modal-alat-bantu-overlay {
         display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 50;
@@ -444,8 +479,14 @@
             <h3>🛍️ Kirim Produk ke Chat WA</h3>
             <button class="aksi sekunder kecil" id="btn-tutup-produk" style="padding:4px 10px;font-size:11px;">Tutup</button>
         </div>
+        <div class="baris-checklist-produk">
+            <span style="font-weight:600;color:#6b7280;">Tampilkan juga:</span>
+            <label><input type="checkbox" id="chk-produk-reseller"> Harga Reseller</label>
+            <label><input type="checkbox" id="chk-produk-grosir"> Harga Grosir</label>
+            <label><input type="checkbox" id="chk-produk-online"> Harga Online</label>
+        </div>
         <div class="baris-cari-produk">
-            <input type="text" id="input-cari-produk-wa" placeholder="Cari nama / kode barang (mis. BT 90y)...">
+            <input type="text" id="input-cari-produk-wa" placeholder="Cari nama / kode barang (mis. ks lakban opp 45)...">
             <select id="filter-toko-produk-wa">
                 <option value="">Semua Toko</option>
                 <option value="DLP">DLP</option>
@@ -454,6 +495,18 @@
         </div>
         <div id="daftar-produk-modal">
             <p style="font-size:12px;color:#9ca3af;text-align:center;padding:24px 12px;">Memuat daftar produk...</p>
+        </div>
+    </div>
+</div>
+
+<div id="modal-banding-produk-overlay">
+    <div id="modal-banding-produk">
+        <h3 style="font-size:14px;color:#111827;margin-bottom:4px;">Perbandingan Harga Merk Lain</h3>
+        <p id="subjudul-banding-produk" style="font-size:11.5px;color:#6b7280;margin-bottom:10px;"></p>
+        <div id="isi-banding-produk" style="max-height:240px;overflow-y:auto;border:1px solid #e5e7eb;border-radius:8px;margin-bottom:12px;"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+            <button class="aksi sekunder kecil" id="btn-tutup-banding-produk">Tutup</button>
+            <button class="btn-kirim-produk-wa" id="btn-kirim-banding-wa" style="display:none;">🛍️ Kirim Perbandingan ke WA</button>
         </div>
     </div>
 </div>
@@ -998,19 +1051,30 @@
 
     // ================= Modal 🛍️ Kirim Produk ke Chat WA =================
     const modalProdukOverlay = document.getElementById('modal-produk-overlay');
+    const modalBandingProdukOverlay = document.getElementById('modal-banding-produk-overlay');
     const inputCariProdukWa = document.getElementById('input-cari-produk-wa');
     const filterTokoProdukWa = document.getElementById('filter-toko-produk-wa');
+    const chkProdukReseller = document.getElementById('chk-produk-reseller');
+    const chkProdukGrosir = document.getElementById('chk-produk-grosir');
+    const chkProdukOnline = document.getElementById('chk-produk-online');
     const daftarProdukModalEl = document.getElementById('daftar-produk-modal');
     let timerCariProdukWa = null;
+    let cacheProdukWa = [];
+    let stateBandingWa = { produkAsli: null, hasil: [] };
 
     function bukaModalProduk() {
         window.chatHub.sembunyikanViewModal();
+        // Default checklist kosong saat dibuka (diminta owner 30 Okt 2026)
+        chkProdukReseller.checked = false;
+        chkProdukGrosir.checked = false;
+        chkProdukOnline.checked = false;
         modalProdukOverlay.classList.add('tampil');
         inputCariProdukWa.focus();
         muatDaftarProdukWa();
     }
 
     function tutupModalProduk() {
+        modalBandingProdukOverlay.classList.remove('tampil');
         modalProdukOverlay.classList.remove('tampil');
         window.chatHub.tampilkanViewModal();
     }
@@ -1020,80 +1084,289 @@
         if (e.target === modalProdukOverlay) tutupModalProduk();
     });
 
+    document.getElementById('btn-tutup-banding-produk').addEventListener('click', () => {
+        modalBandingProdukOverlay.classList.remove('tampil');
+    });
+    modalBandingProdukOverlay.addEventListener('click', (e) => {
+        if (e.target === modalBandingProdukOverlay) modalBandingProdukOverlay.classList.remove('tampil');
+    });
+
     inputCariProdukWa.addEventListener('input', () => {
         clearTimeout(timerCariProdukWa);
         timerCariProdukWa = setTimeout(muatDaftarProdukWa, 250);
     });
     filterTokoProdukWa.addEventListener('change', muatDaftarProdukWa);
+    chkProdukReseller.addEventListener('change', renderDaftarProdukWa);
+    chkProdukGrosir.addEventListener('change', renderDaftarProdukWa);
+    chkProdukOnline.addEventListener('change', renderDaftarProdukWa);
 
     function escHtml(s) {
         return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
+
+    function fmtRp(n) {
+        return 'Rp ' + Math.round(Number(n || 0)).toLocaleString('id-ID');
+    }
+
+    /**
+     * Susun teks daftar harga (persis format gambar 3 / Cek Stok & Harga di Hanmar POS):
+     *   KS Lakban OPP 45mm x 200y Bening
+     *
+     *   SATUAN:
+     *   - Satuan: Rp 15.900
+     *   - Lusin: Rp 187.700
+     *   - 1/2 Dus: Rp 268.400
+     *   - 1 Dus: Rp 509.800
+     */
+    function susunTeksHargaWa(p) {
+        const tampilReseller = chkProdukReseller.checked;
+        const tampilGrosir = chkProdukGrosir.checked;
+        const tampilOnline = chkProdukOnline.checked;
+        const satuanList = p.satuan || [];
+
+        let teks = p.nama + '\n';
+        satuanList.forEach((s) => {
+            if (satuanList.length > 1) {
+                teks += '\n' + String(s.nama || 'SATUAN').toUpperCase() + ':\n';
+            }
+            (s.harga_tier || []).forEach((t) => {
+                if ((t.kode === 'reseller' && !tampilReseller) || (t.kode === 'grosir' && !tampilGrosir)) return;
+                teks += '- ' + t.label + ': ' + fmtRp(t.harga) + '\n';
+            });
+            if (tampilOnline) {
+                (s.harga_online || []).forEach((o) => {
+                    const bagian = [];
+                    if (o.satuan !== null && o.satuan !== undefined) bagian.push('Satuan ' + fmtRp(o.satuan));
+                    if (o.lusin !== null && o.lusin !== undefined) bagian.push('Lusin ' + fmtRp(o.lusin));
+                    if (o.dus !== null && o.dus !== undefined) bagian.push('Dus ' + fmtRp(o.dus));
+                    if (bagian.length > 0) {
+                        teks += '- ' + o.platform + ': ' + bagian.join(', ') + '\n';
+                    }
+                });
+            }
+        });
+        return teks.trim();
+    }
+
+    function susunTeksBandingWa(p, daftarBanding) {
+        const hargaSatuanAsli = p.satuan?.[0]?.harga_tier?.find((t) => t.kode === 'satuan')?.harga || 0;
+        let teks = 'Perbandingan harga (ukuran sama):\n\n';
+        teks += '- ' + p.nama + ': ' + fmtRp(hargaSatuanAsli) + '\n';
+        (daftarBanding || []).forEach((b) => {
+            teks += '- ' + b.merk + ' (' + b.nama + '): ' + fmtRp(b.harga) + '\n';
+        });
+        return teks.trim();
+    }
+
+    async function bukaBandingProdukWa(p) {
+        stateBandingWa = { produkAsli: p, hasil: [] };
+        document.getElementById('subjudul-banding-produk').textContent = 'Jenis & ukuran sama dengan: ' + p.nama;
+        const isiEl = document.getElementById('isi-banding-produk');
+        const btnKirimBanding = document.getElementById('btn-kirim-banding-wa');
+        btnKirimBanding.style.display = 'none';
+        isiEl.innerHTML = '<div style="padding:18px;text-align:center;font-size:12px;color:#9ca3af;">Memuat perbandingan...</div>';
+        modalBandingProdukOverlay.classList.add('tampil');
+
+        try {
+            const data = await window.chatHub.bandingkanProdukPos(p.id);
+            const hasil = data?.produk || [];
+            stateBandingWa.hasil = hasil;
+            if (hasil.length === 0) {
+                isiEl.innerHTML = '<div style="padding:18px;text-align:center;font-size:12px;color:#9ca3af;">Tidak ditemukan barang merk lain dengan jenis & ukuran sama.</div>';
+                return;
+            }
+            isiEl.innerHTML = `
+                <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                    <thead style="background:#f9fafb;color:#6b7280;text-align:left;">
+                        <tr>
+                            <th style="padding:7px 10px;">Merk / Nama</th>
+                            <th style="padding:7px 10px;text-align:right;">Harga Satuan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${hasil.map((b) => `
+                            <tr style="border-top:1px solid #f3f4f6;">
+                                <td style="padding:7px 10px;">
+                                    <div style="font-weight:600;color:#111827;">${escHtml(b.merk)}</div>
+                                    <div style="font-size:11px;color:#9ca3af;">${escHtml(b.nama)}</div>
+                                </td>
+                                <td style="padding:7px 10px;text-align:right;font-weight:600;color:#111827;">${fmtRp(b.harga)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            btnKirimBanding.style.display = 'inline-block';
+        } catch (err) {
+            isiEl.innerHTML = `<div style="padding:18px;text-align:center;font-size:12px;color:#dc2626;">Gagal memuat: ${escHtml(err.message)}</div>`;
+        }
+    }
+
+    document.getElementById('btn-kirim-banding-wa').addEventListener('click', async () => {
+        if (!stateBandingWa.produkAsli) return;
+        const teks = susunTeksBandingWa(stateBandingWa.produkAsli, stateBandingWa.hasil);
+        tutupModalProduk();
+        const res = await window.chatHub.kirimProdukKeChat({ teks, salinFoto: false });
+        if (res.berhasil) {
+            toast('Perbandingan harga dimasukkan ke kotak chat WA.', 'sukses');
+        } else {
+            toast(res.alasan || 'Perbandingan harga disalin ke clipboard (Ctrl+V di chat).', 'info');
+        }
+    });
 
     async function muatDaftarProdukWa() {
         const q = inputCariProdukWa.value.trim();
         const toko = filterTokoProdukWa.value;
         daftarProdukModalEl.innerHTML = '<p style="font-size:12px;color:#9ca3af;text-align:center;padding:24px 12px;">Memuat produk...</p>';
         try {
-            const items = await window.chatHub.cariProdukPos({ q, toko });
-            if (!items || items.length === 0) {
-                daftarProdukModalEl.innerHTML = '<p style="font-size:12px;color:#9ca3af;text-align:center;padding:24px 12px;">Produk tidak ditemukan.</p>';
-                return;
-            }
-            daftarProdukModalEl.innerHTML = '';
-            items.forEach((p) => {
-                const baris = document.createElement('div');
-                baris.className = 'kartu-produk-wa';
-                const tierHtml = (p.tiers || []).map((t) => `<div>• <strong>${escHtml(t.label)}:</strong> ${escHtml(t.harga_fmt)}</div>`).join('');
-                const warnaStok = p.stok_pcs > 0 ? '#059669' : '#dc2626';
-                baris.innerHTML = `
+            cacheProdukWa = await window.chatHub.cariProdukPos({ q, toko }) || [];
+            renderDaftarProdukWa();
+        } catch (err) {
+            daftarProdukModalEl.innerHTML = `<p style="font-size:12px;color:#dc2626;text-align:center;padding:24px 12px;">Gagal memuat produk: ${escHtml(err.message)}</p>`;
+        }
+    }
+
+    function renderDaftarProdukWa() {
+        if (!cacheProdukWa || cacheProdukWa.length === 0) {
+            daftarProdukModalEl.innerHTML = '<p style="font-size:12px;color:#9ca3af;text-align:center;padding:24px 12px;">Produk tidak ditemukan.</p>';
+            return;
+        }
+        const tampilReseller = chkProdukReseller.checked;
+        const tampilGrosir = chkProdukGrosir.checked;
+        const tampilOnline = chkProdukOnline.checked;
+
+        daftarProdukModalEl.innerHTML = '';
+        cacheProdukWa.forEach((p) => {
+            const kartu = document.createElement('div');
+            kartu.className = 'kartu-produk-wa';
+            const satuanList = p.satuan || [];
+
+            const htmlSatuan = satuanList.map((s) => {
+                const judulSatuan = satuanList.length > 1
+                    ? `<div style="margin-top:8px;margin-bottom:2px;font-size:11px;font-weight:600;color:#6b7280;">Satuan ${escHtml(s.nama)} ${s.is_default ? '<span style="font-weight:400;color:#9ca3af;">(default)</span>' : ''}</div>`
+                    : '';
+
+                const barisReguler = (s.harga_tier || [])
+                    .filter((t) => t.kode !== 'reseller' && t.kode !== 'grosir')
+                    .map((t) => `
+                        <tr>
+                            <td style="color:#6b7280;">
+                                ${escHtml(t.label)}
+                                ${t.isi && t.kode !== 'satuan' ? `<span style="color:#9ca3af;">(isi ${t.isi} pcs)</span>` : ''}
+                            </td>
+                            <td style="text-align:right;font-weight:600;color:#1f2937;">
+                                ${t.per_pcs ? `<span style="margin-right:6px;font-size:11px;font-weight:400;color:#9ca3af;">(&asymp; ${fmtRp(t.per_pcs)}/pcs)</span>` : ''}
+                                ${fmtRp(t.harga)}
+                            </td>
+                        </tr>
+                    `).join('');
+
+                const barisReseller = tampilReseller
+                    ? (s.harga_tier || []).filter((t) => t.kode === 'reseller').map((t) => `
+                        <tr style="background:#fffbeb;">
+                            <td style="color:#b45309;padding-left:4px;">
+                                ${escHtml(t.label)} ${t.isi ? `<span style="color:#f59e0b;">(min ${t.isi} pcs)</span>` : ''}
+                            </td>
+                            <td style="text-align:right;font-weight:600;color:#b45309;padding-right:4px;">
+                                ${t.per_pcs ? `<span style="margin-right:6px;font-size:11px;font-weight:400;color:#9ca3af;">(&asymp; ${fmtRp(t.per_pcs)}/pcs)</span>` : ''}
+                                ${fmtRp(t.harga)}
+                            </td>
+                        </tr>
+                    `).join('')
+                    : '';
+
+                const barisGrosir = tampilGrosir
+                    ? (s.harga_tier || []).filter((t) => t.kode === 'grosir').map((t) => `
+                        <tr style="background:#fffbeb;">
+                            <td style="color:#b45309;padding-left:4px;">
+                                ${escHtml(t.label)} ${t.isi ? `<span style="color:#f59e0b;">(min ${t.isi} pcs)</span>` : ''}
+                            </td>
+                            <td style="text-align:right;font-weight:600;color:#b45309;padding-right:4px;">
+                                ${t.per_pcs ? `<span style="margin-right:6px;font-size:11px;font-weight:400;color:#9ca3af;">(&asymp; ${fmtRp(t.per_pcs)}/pcs)</span>` : ''}
+                                ${fmtRp(t.harga)}
+                            </td>
+                        </tr>
+                    `).join('')
+                    : '';
+
+                const barisOnline = (tampilOnline && (s.harga_online || []).length > 0)
+                    ? (s.harga_online || []).map((o) => {
+                        const bagian = [];
+                        if (o.satuan !== null && o.satuan !== undefined) bagian.push(`Satuan ${fmtRp(o.satuan)}`);
+                        if (o.lusin !== null && o.lusin !== undefined) bagian.push(`Lusin ${fmtRp(o.lusin)}`);
+                        if (o.dus !== null && o.dus !== undefined) bagian.push(`Dus ${fmtRp(o.dus)}`);
+                        return `
+                            <tr style="background:#eff6ff;">
+                                <td style="color:#1d4ed8;padding-left:4px;">${escHtml(o.platform)}</td>
+                                <td style="text-align:right;font-weight:600;color:#1d4ed8;padding-right:4px;">${bagian.join(' &middot; ')}</td>
+                            </tr>
+                        `;
+                    }).join('')
+                    : '';
+
+                return `
+                    ${judulSatuan}
+                    <table class="tabel-tier">
+                        <tbody>${barisReguler}${barisReseller}${barisGrosir}${barisOnline}</tbody>
+                    </table>
+                `;
+            }).join('');
+
+            kartu.innerHTML = `
+                <div class="atas-produk">
                     ${p.foto_url
                         ? `<img class="foto-produk" src="${escHtml(p.foto_url)}" alt="">`
                         : `<div class="foto-produk">📦</div>`}
                     <div class="info-produk">
                         <div class="nama-produk">${escHtml(p.nama)}</div>
-                        <div class="meta-produk">
-                            <span>${escHtml(p.kode || '-')}</span> ·
-                            <span>${escHtml(p.toko || '-')}</span> ·
-                            <strong style="color:${warnaStok};">Stok: ${escHtml(p.stok_label)}</strong>
-                        </div>
-                        ${tierHtml ? `<div class="tier-produk">${tierHtml}</div>` : ''}
+                        <div class="meta-produk">${escHtml(p.kode || '-')}${p.kategori ? ' &middot; ' + escHtml(p.kategori) : (p.toko ? ' &middot; ' + escHtml(p.toko) : '')}</div>
                     </div>
-                    <div class="aksi-produk">
-                        <button class="btn-kirim-produk-wa" data-aksi="kirim-teks">🛍️ Kirim</button>
-                        ${p.foto_url ? `<button class="btn-kirim-produk-wa sekunder" data-aksi="kirim-foto" title="Isi teks ke kotak ketik + salin foto ke clipboard (tinggal Ctrl+V di WA)">📷 + Foto</button>` : ''}
+                    <div style="text-align:right;flex-shrink:0;">
+                        <span class="badge-stok ${p.menipis ? 'menipis' : 'aman'}">${p.stok_pcs} pcs${p.menipis ? ' &middot; menipis' : ''}</span>
+                        ${p.stok_dus_label ? `<div style="font-size:10.5px;color:#9ca3af;margin-top:2px;">&asymp; ${escHtml(p.stok_dus_label)}</div>` : ''}
                     </div>
-                `;
-                baris.querySelector('[data-aksi="kirim-teks"]').addEventListener('click', async () => {
+                </div>
+                <div>${htmlSatuan}</div>
+                <div class="kaki-produk">
+                    <button type="button" class="btn-link-aksi" style="color:#d97706;" data-aksi="bandingkan">Bandingkan Merk Lain</button>
+                    ${p.foto_url ? `<button type="button" class="btn-kirim-produk-wa sekunder" data-aksi="kirim-foto" title="Isi daftar harga ke kotak ketik + salin foto ke clipboard (tinggal Ctrl+V di WA)">📷 + Foto</button>` : ''}
+                    <button type="button" class="btn-kirim-produk-wa" data-aksi="kirim-teks">Kirim via WhatsApp</button>
+                </div>
+            `;
+
+            kartu.querySelector('[data-aksi="bandingkan"]').addEventListener('click', () => bukaBandingProdukWa(p));
+
+            kartu.querySelector('[data-aksi="kirim-teks"]').addEventListener('click', async () => {
+                const teks = susunTeksHargaWa(p);
+                tutupModalProduk();
+                const res = await window.chatHub.kirimProdukKeChat({ teks, fotoUrl: p.foto_url, salinFoto: false });
+                if (res.berhasil) {
+                    toast(`Daftar harga "${p.nama}" dimasukkan ke kotak chat WA.`, 'sukses');
+                } else {
+                    toast(res.alasan || 'Teks daftar harga disalin ke clipboard (Ctrl+V di chat).', 'info');
+                }
+            });
+
+            const btnFoto = kartu.querySelector('[data-aksi="kirim-foto"]');
+            if (btnFoto) {
+                btnFoto.addEventListener('click', async () => {
+                    btnFoto.disabled = true;
+                    btnFoto.textContent = '⏳...';
+                    const teks = susunTeksHargaWa(p);
+                    const res = await window.chatHub.kirimProdukKeChat({ teks, fotoUrl: p.foto_url, salinFoto: true });
                     tutupModalProduk();
-                    const res = await window.chatHub.kirimProdukKeChat({ teks: p.teks_wa, fotoUrl: p.foto_url, salinFoto: false });
-                    if (res.berhasil) {
-                        toast(`Info "${p.nama}" dimasukkan ke kotak chat WA.`, 'sukses');
+                    if (res.fotoTersalin && res.berhasil) {
+                        toast('Daftar harga terisi & foto disalin! Tekan Ctrl+V di kotak chat WA untuk lampirkan foto.', 'sukses');
+                    } else if (res.fotoTersalin) {
+                        toast('Foto produk disalin ke clipboard (tekan Ctrl+V di chat WA).', 'sukses');
                     } else {
-                        toast(res.alasan || 'Teks produk disalin ke clipboard (Ctrl+V di chat).', 'info');
+                        toast(res.alasan || 'Daftar harga dimasukkan ke chat.', 'info');
                     }
                 });
-                const btnFoto = baris.querySelector('[data-aksi="kirim-foto"]');
-                if (btnFoto) {
-                    btnFoto.addEventListener('click', async () => {
-                        btnFoto.disabled = true;
-                        btnFoto.textContent = '⏳...';
-                        const res = await window.chatHub.kirimProdukKeChat({ teks: p.teks_wa, fotoUrl: p.foto_url, salinFoto: true });
-                        tutupModalProduk();
-                        if (res.fotoTersalin && res.berhasil) {
-                            toast('Teks terisi & foto disalin! Tekan Ctrl+V di kotak chat WA untuk lampirkan foto.', 'sukses');
-                        } else if (res.fotoTersalin) {
-                            toast('Foto produk disalin ke clipboard (tekan Ctrl+V di chat WA).', 'sukses');
-                        } else {
-                            toast(res.alasan || 'Teks produk dimasukkan ke chat.', 'info');
-                        }
-                    });
-                }
-                daftarProdukModalEl.appendChild(baris);
-            });
-        } catch (err) {
-            daftarProdukModalEl.innerHTML = `<p style="font-size:12px;color:#dc2626;text-align:center;padding:24px 12px;">Gagal memuat produk: ${escHtml(err.message)}</p>`;
-        }
+            }
+
+            daftarProdukModalEl.appendChild(kartu);
+        });
     }
 
     // ================= Modal Alat Bantu: Balasan Cepat, Pengingat, Jangan Ganggu =================

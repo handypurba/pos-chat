@@ -96,5 +96,6 @@ contextBridge.exposeInMainWorld('chatHub', {
     muatStatusUlasanTokped: () => ipcRenderer.invoke('status-ulasan-tokped-muat'),
 
     cariProdukPos: (params) => ipcRenderer.invoke('produk-pos-cari', params),
+    bandingkanProdukPos: (productId) => ipcRenderer.invoke('produk-pos-bandingkan', productId),
     kirimProdukKeChat: (payload) => ipcRenderer.invoke('produk-kirim-ke-chat', payload),
 });

@@ -1334,6 +1334,18 @@ ipcMain.handle('produk-pos-cari', async (event, { q = '', toko = '' } = {}) => {
     return hasil?.produk || [];
 });
 
+ipcMain.handle('produk-pos-bandingkan', async (event, productId) => {
+    const token = muatTokenChatHub();
+    if (!token) throw new Error('Belum login POS Chat.');
+    const cfg = muatConfig();
+    const url = `${cfg.apiBaseUrl}/api/chathub/produk/${encodeURIComponent(productId)}/bandingkan`;
+    const hasil = await requestJson('GET', url, {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/json',
+    });
+    return hasil || { ukuran: null, produk: [] };
+});
+
 ipcMain.handle('produk-kirim-ke-chat', async (event, { teks, fotoUrl, salinFoto = false } = {}) => {
     let fotoTersalin = false;
     if (salinFoto && fotoUrl) {
