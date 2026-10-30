@@ -195,7 +195,7 @@ async function bacaBelumDibalasShopee(view, workspaceId) {
         for (const b of semuaBaris) {
             if (!b.nama) continue;
 
-            const { terlihatHariIni } = prosesStabilitasBaris(
+            const { terlihatHariIni, stabil } = prosesStabilitasBaris(
                 'shopee', workspaceId, b.nama, b.sudahDibalas, b.waktuMentah, b.pesanCuplikan
             );
 
@@ -207,6 +207,7 @@ async function bacaBelumDibalasShopee(view, workspaceId) {
             }
 
             if (b.sudahDibalas) continue;
+            if (!stabil) continue; // belum konsisten 2 siklus -- lihat catatan prosesStabilitasBaris()
 
             const waktuAbsolut = waktuMentahShopeeKeAbsolut(b.waktuMentah);
             if (!waktuAbsolut) continue;
@@ -279,13 +280,27 @@ const riwayatBaris = new Map();
  *    jauh lebih cepat dari jeda polling), jadi baris seperti itu memang TIDAK PERNAH kebaca
  *    "belum dibalas" sama sekali -- bukan soal stabilitas.
  *
- * 2. terlihatHariIni (baru dipakai bikin Lead) -- BARU dipercaya kalau pembacaan SAAT INI sama
- *    persis dengan siklus SEBELUMNYA (sudahDibalas + waktuMentah + pesanCuplikan semua cocok).
- *    Ini pengaman terhadap baris yang KEBETULAN sesaat kebaca meyakinkan (format waktu valid,
+ * 2. terlihatHariIni (dipakai bikin Lead) -- BARU dipercaya kalau pembacaan SAAT INI sama persis
+ *    dengan siklus SEBELUMNYA (sudahDibalas + waktuMentah + pesanCuplikan semua cocok). Ini
+ *    pengaman terhadap baris yang KEBETULAN sesaat kebaca meyakinkan (format waktu valid,
  *    kelihatan konsisten) padahal DOM belum selesai settle (kasus "Queen Gallery" 10 Sep) --
  *    beda dari (1), di sini KEPUTUSAN AKHIR bikin Lead boleh telat 1 siklus demi kepastian,
  *    karena begitu terlihatHariIni true SEKALI, kunci_dedup di server sudah aman dipanggil
- *    berkali-kali (tidak masalah kalaupun telat). */
+ *    berkali-kali (tidak masalah kalaupun telat).
+ *
+ * 3. stabil (dipakai badge "belum dibalas" / chat_hub_pesan_masuk, ditambahkan 30 Okt 2026) --
+ *    SAMA PERSIS syaratnya dengan (2) tapi TANPA syarat POLA_JAM_HARI_INI (badge ini juga
+ *    berlaku untuk pesan yang preview waktunya "Kemarin" dst, bukan cuma hari ini). Ditambahkan
+ *    setelah ketemu kasus nyata owner 30 Okt 2026: beberapa kontak (WA Admin HF, laptop yang
+ *    lama tidak di-restart) ke-baca status "belum dibalas" SECARA FLAKY -- bolak-balik
+ *    true/false tiap siklus scan padahal TIDAK ADA perubahan apa pun di WA (dikonfirmasi dari
+ *    data server: urutan_ke_hari_ini sampai 70+ dalam sehari untuk kontak yang sama, dan
+ *    sebagian pesan_cuplikan yang kebaca cuma 1 huruf "P" -- tanda DOM belum settle saat
+ *    di-scan). Sebelumnya badge "belum dibalas" SENGAJA tidak pakai syarat stabilitas demi
+ *    respons cepat (lihat (1)) -- percobaan itu TERBUKTI tidak cukup untuk baris yang flaky
+ *    terus-menerus (bukan cuma transisi sesaat), jadi sekarang DIWAJIBKAN juga. Konsekuensi:
+ *    badge bisa telat ~1 siklus (~30 detik) untuk kontak yang BENERAN baru pertama kali belum
+ *    dibalas -- trade-off yang jauh lebih baik daripada banner nyangkut salah berulang-ulang. */
 function prosesStabilitasBaris(platform, workspaceId, nama, sudahDibalas, waktuMentah, pesanCuplikan) {
     const kunci = platform + '|' + workspaceId + '|' + nama;
 
@@ -299,7 +314,7 @@ function prosesStabilitasBaris(platform, workspaceId, nama, sudahDibalas, waktuM
     riwayatBaris.set(kunci, { sudahDibalas, waktuMentah, pesanCuplikan });
 
     const terlihatHariIni = stabil && POLA_JAM_HARI_INI.test((waktuMentah || '').trim()) && pernahBelumDibalas.has(kunci);
-    return { terlihatHariIni };
+    return { terlihatHariIni, stabil };
 }
 
 async function bacaBelumDibalasWa(view, workspaceId) {
@@ -313,7 +328,7 @@ async function bacaBelumDibalasWa(view, workspaceId) {
             const info = analisisBarisWa(baris);
             if (!info.nama || info.kemungkinanGrup) continue;
 
-            const { terlihatHariIni } = prosesStabilitasBaris(
+            const { terlihatHariIni, stabil } = prosesStabilitasBaris(
                 'whatsapp', workspaceId, info.nama, info.sudahDibalas, info.waktuMentah, info.pesanCuplikan
             );
 
@@ -329,6 +344,7 @@ async function bacaBelumDibalasWa(view, workspaceId) {
             }
 
             if (info.sudahDibalas) continue;
+            if (!stabil) continue; // belum konsisten 2 siklus -- lihat catatan prosesStabilitasBaris()
 
             const waktuAbsolut = waktuMentahKeAbsolut(info.waktuMentah);
             if (!waktuAbsolut) continue;
