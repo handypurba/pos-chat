@@ -1346,43 +1346,54 @@ ipcMain.handle('produk-pos-bandingkan', async (event, productId) => {
     return hasil || { ukuran: null, produk: [] };
 });
 
+let sedangKirimProdukKeChat = false;
 ipcMain.handle('produk-kirim-ke-chat', async (event, { teks, fotoUrl, salinFoto = false } = {}) => {
-    let fotoTersalin = false;
-    if (salinFoto && fotoUrl) {
-        try {
-            const buf = await unduhBuffer(fotoUrl);
-            const img = nativeImage.createFromBuffer(buf);
-            if (!img.isEmpty()) {
-                clipboard.writeImage(img);
-                fotoTersalin = true;
+    if (sedangKirimProdukKeChat) {
+        return { berhasil: false, alasan: 'Pengiriman sedang diproses...' };
+    }
+    sedangKirimProdukKeChat = true;
+    try {
+        let fotoTersalin = false;
+        if (salinFoto && fotoUrl) {
+            try {
+                const buf = await unduhBuffer(fotoUrl);
+                const img = nativeImage.createFromBuffer(buf);
+                if (!img.isEmpty()) {
+                    clipboard.writeImage(img);
+                    fotoTersalin = true;
+                }
+            } catch (err) {
+                console.warn('[KirimProduk] Gagal menyalin foto ke clipboard:', err.message);
             }
-        } catch (err) {
-            console.warn('[KirimProduk] Gagal menyalin foto ke clipboard:', err.message);
         }
+
+        const view = activeId ? views[activeId] : null;
+        if (!view || view.webContents.isDestroyed()) {
+            if (!fotoTersalin && teks) clipboard.writeText(teks);
+            return { berhasil: false, alasan: 'Buka tab chat WhatsApp dulu, lalu klik Kirim.', disalinKeClipboard: true, fotoTersalin };
+        }
+
+        // Pastikan BrowserView aktif kembali terpasang sebelum kita isi kotak ketik & fokuskan
+        mainWindow?.setBrowserView(view);
+        aturUkuranView(view);
+        view.webContents.focus();
+
+        const terisi = teks ? await pantauChatWa.isiKotakKetikWa(view, teks) : false;
+        if (!terisi && teks && !fotoTersalin) {
+            clipboard.writeText(teks);
+        }
+
+        return {
+            berhasil: terisi,
+            fotoTersalin,
+            disalinKeClipboard: !terisi,
+            alasan: terisi ? null : 'Pastikan ada ruang obrolan WhatsApp yang sedang terbuka (teks sudah disalin ke clipboard).',
+        };
+    } finally {
+        setTimeout(() => {
+            sedangKirimProdukKeChat = false;
+        }, 600);
     }
-
-    const view = activeId ? views[activeId] : null;
-    if (!view || view.webContents.isDestroyed()) {
-        if (!fotoTersalin && teks) clipboard.writeText(teks);
-        return { berhasil: false, alasan: 'Buka tab chat WhatsApp dulu, lalu klik Kirim.', disalinKeClipboard: true, fotoTersalin };
-    }
-
-    // Pastikan BrowserView aktif kembali terpasang sebelum kita isi kotak ketik & fokuskan
-    mainWindow?.setBrowserView(view);
-    aturUkuranView(view);
-    view.webContents.focus();
-
-    const terisi = teks ? await pantauChatWa.isiKotakKetikWa(view, teks) : false;
-    if (!terisi && teks && !fotoTersalin) {
-        clipboard.writeText(teks);
-    }
-
-    return {
-        berhasil: terisi,
-        fotoTersalin,
-        disalinKeClipboard: !terisi,
-        alasan: terisi ? null : 'Pastikan ada ruang obrolan WhatsApp yang sedang terbuka (teks sudah disalin ke clipboard).',
-    };
 });
 
 ipcMain.handle('kontak-daftar', () => kontak.muatSemua());

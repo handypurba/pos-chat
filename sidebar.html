@@ -1152,7 +1152,7 @@
             teks += '\nInfo & order: ' + linkWebstore + '\n';
         }
 
-        return teks.trim();
+        return teks.trim() + '\n';
     }
 
     function susunTeksBandingWa(p, daftarBanding) {
@@ -1166,7 +1166,7 @@
         if (linkWebstore) {
             teks += '\nInfo & order: ' + linkWebstore + '\n';
         }
-        return teks.trim();
+        return teks.trim() + '\n';
     }
 
     async function bukaBandingProdukWa(p) {
@@ -1347,7 +1347,10 @@
 
             kartu.querySelector('[data-aksi="bandingkan"]').addEventListener('click', () => bukaBandingProdukWa(p));
 
-            kartu.querySelector('[data-aksi="kirim-teks"]').addEventListener('click', async () => {
+            const btnKirimTeks = kartu.querySelector('[data-aksi="kirim-teks"]');
+            btnKirimTeks.addEventListener('click', async () => {
+                if (btnKirimTeks.disabled) return;
+                btnKirimTeks.disabled = true;
                 const teks = susunTeksHargaWa(p);
                 tutupModalProduk();
                 const res = await window.chatHub.kirimProdukKeChat({ teks, fotoUrl: p.foto_url, salinFoto: false });

@@ -645,10 +645,8 @@ async function isiKotakKetikWa(view, teks) {
         sel.addRange(range);
         document.execCommand('delete', false);
 
-        // Di editor Lexical WhatsApp Web, memanggil insertText sekaligus dengan karakter '\\n'
-        // membuat semua baris digabung jadi 1 paragraf tanpa pindah baris (berantakan).
-        // Solusi: gunakan ClipboardEvent('paste') sintetis (atau insertText per baris + Shift+Enter)
-        // supaya Lexical membuat paragraf/baris baru untuk setiap '\\n' persis seperti Ctrl+V.
+        // Di editor Lexical WhatsApp Web, gunakan ClipboardEvent('paste') sintetis
+        // agar Lexical memproses setiap karakter baris baru persis seperti Ctrl+V.
         var teks = ${teksAman};
         try {
             var dt = new DataTransfer();
@@ -660,20 +658,8 @@ async function isiKotakKetikWa(view, teks) {
             });
             kotak.dispatchEvent(pasteEvt);
             kotak.dispatchEvent(new InputEvent('input', { bubbles: true, cancelable: true, composed: true }));
-        } catch (e) {}
-
-        // Fallback kalau paste event tidak diproses Lexical: masukkan baris satu-persatu
-        if (!kotak.innerText || !kotak.innerText.trim()) {
-            var baris = teks.split(/\\r?\\n/);
-            for (var i = 0; i < baris.length; i++) {
-                if (i > 0) {
-                    kotak.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, shiftKey: true, bubbles: true }));
-                    document.execCommand('insertLineBreak');
-                }
-                if (baris[i]) {
-                    document.execCommand('insertText', false, baris[i]);
-                }
-            }
+        } catch (e) {
+            document.execCommand('insertText', false, teks);
         }
         return true;
     })()
