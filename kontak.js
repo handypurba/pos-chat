@@ -1,3 +1,4 @@
+const { normalisasiNomor } = require('./nomor');
 const path = require('path');
 const fs = require('fs');
 const { app } = require('electron');
@@ -44,7 +45,7 @@ function tambah({ nama, telepon, grup }) {
     const kontak = {
         id: 'manual-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
         nama,
-        telepon: telepon.replace(/\D/g, ''),
+        telepon: normalisasiNomor(telepon) || telepon.replace(/\D/g, ''),
         grup: grup || 'Tanpa Grup',
         sumber: 'manual',
     };
@@ -59,7 +60,7 @@ function tambahBanyak(daftarBaru) {
     const ditambahkan = daftarBaru.map((k, i) => ({
         id: 'manual-' + Date.now() + '-' + i + '-' + Math.floor(Math.random() * 1000),
         nama: k.nama,
-        telepon: k.telepon.replace(/\D/g, ''),
+        telepon: normalisasiNomor(k.telepon) || k.telepon.replace(/\D/g, ''),
         grup: k.grup || 'Tanpa Grup',
         sumber: 'manual',
     }));

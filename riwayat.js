@@ -15,11 +15,35 @@ function muatSemua() {
     }
 }
 
+const TINGKAT = { terkirim: 1, belum_sampai: 2, sampai: 3, dibaca: 4 };
+
+function hitungRingkasan(hasil) {
+    const ringkasan = { terkirim: 0, gagal: 0, tidak_terdaftar: 0 };
+    hasil.forEach((h) => { ringkasan[h.status] = (ringkasan[h.status] || 0) + 1; });
+    return ringkasan;
+}
+
+/** Naikkan status 1 pesan yang sudah tersimpan (mis. terkirim -> sampai/dibaca/belum_sampai) —
+ * kabar "sampai"/"dibaca" datang belakangan, bisa jauh setelah kampanye selesai disimpan. */
+function perbaruiStatusPesan({ idPesan, status }) {
+    if (!idPesan || !TINGKAT[status]) return false;
+    const daftar = muatSemua();
+    for (const kampanye of daftar.slice(0, 10)) {
+        const baris = kampanye.hasil.find((h) => h.idPesan === idPesan);
+        if (!baris) continue;
+        if ((TINGKAT[baris.status] || 0) >= TINGKAT[status]) return false;
+        baris.status = status;
+        kampanye.ringkasan = hitungRingkasan(kampanye.hasil);
+        fs.writeFileSync(FILE_RIWAYAT(), JSON.stringify(daftar, null, 2));
+        return true;
+    }
+    return false;
+}
+
 /** Simpan 1 kampanye yang baru selesai (dipanggil sekali di akhir kirimBroadcast). */
 function simpanKampanye({ template, hasil }) {
     const daftar = muatSemua();
-    const ringkasan = { terkirim: 0, gagal: 0, tidak_terdaftar: 0 };
-    hasil.forEach((h) => { if (ringkasan[h.status] !== undefined) ringkasan[h.status]++; });
+    const ringkasan = hitungRingkasan(hasil);
 
     const kampanye = {
         id: 'kampanye-' + Date.now(),
@@ -34,4 +58,4 @@ function simpanKampanye({ template, hasil }) {
     return kampanye;
 }
 
-module.exports = { muatSemua, simpanKampanye };
+module.exports = { muatSemua, simpanKampanye, perbaruiStatusPesan };

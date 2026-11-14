@@ -14,6 +14,7 @@ const followup = require('./followup');
 const broadcastRemote = require('./broadcastRemote');
 const pantauChatWa = require('./pantauChatWa');
 const alatBantu = require('./alatBantu');
+const janganKirim = require('./janganKirim');
 const pantauUlasanTokped = require('./pantauUlasanTokped');
 const { autoUpdater } = require('electron-updater');
 
@@ -683,6 +684,11 @@ function tampilkanWorkspace(id) {
                 onQr: (dataUrl) => mainWindow.webContents.send('broadcast-qr', dataUrl),
                 onStatus: (status) => mainWindow.webContents.send('broadcast-status', status),
                 onNomor: (nomor) => mainWindow.webContents.send('broadcast-nomor', nomor),
+                onJanganKirimBerubah: (info) => mainWindow.webContents.send('jangan-kirim-berubah', info),
+                onStatusPesan: (pembaruan) => {
+                    mainWindow.webContents.send('broadcast-log', pembaruan);
+                    terapkanPembaruanStatus(pembaruan);
+                },
                 onPesanMasuk: (pesan) => mainWindow.webContents.send('broadcast-pesan-masuk', pesan),
             });
             broadcast.mulaiKoneksi();
@@ -1153,20 +1159,51 @@ ipcMain.handle('ambil-pelanggan', async () => {
     return ambilPelangganDb();
 });
 
+// Daftar hasil kampanye yang SEDANG berjalan (belum tersimpan ke riwayat) — kabar "sampai/dibaca"
+// bisa datang sebelum kampanye selesai, jadi ikut diperbarui di sini; yang sudah tersimpan
+// diperbarui lewat riwayat.perbaruiStatusPesan().
+const hasilKampanyeAktif = new Set();
+const TINGKAT_STATUS_PESAN = { terkirim: 1, belum_sampai: 2, sampai: 3, dibaca: 4 };
+
+function terapkanPembaruanStatus({ idPesan, status }) {
+    let ketemu = false;
+    for (const hasil of hasilKampanyeAktif) {
+        const baris = hasil.find((h) => h.idPesan === idPesan);
+        if (baris && (TINGKAT_STATUS_PESAN[baris.status] || 0) < TINGKAT_STATUS_PESAN[status]) baris.status = status;
+        if (baris) ketemu = true;
+    }
+    if (!ketemu) riwayat.perbaruiStatusPesan({ idPesan, status });
+}
+
 ipcMain.handle('kirim-broadcast', async (event, { penerima, template, jeda, lampiran, jamOperasional }) => {
     const hasilLengkap = [];
-    await broadcast.kirimBroadcast(penerima, template, jeda, lampiran, (log) => {
-        mainWindow.webContents.send('broadcast-log', log);
-        if (log.id && ['terkirim', 'tidak_terdaftar', 'gagal'].includes(log.status)) {
-            hasilLengkap.push(log);
-        }
-    }, jamOperasional);
+    hasilKampanyeAktif.add(hasilLengkap);
+    try {
+        await broadcast.kirimBroadcast(penerima, template, jeda, lampiran, (log) => {
+            mainWindow.webContents.send('broadcast-log', log);
+            if (log.id && ['terkirim', 'tidak_terdaftar', 'gagal'].includes(log.status)) {
+                hasilLengkap.push(log);
+            }
+        }, jamOperasional);
+    } finally {
+        hasilKampanyeAktif.delete(hasilLengkap);
+    }
     if (hasilLengkap.length > 0) {
         riwayat.simpanKampanye({ template, hasil: hasilLengkap });
     }
 });
 
 ipcMain.handle('riwayat-daftar', () => riwayat.muatSemua());
+
+ipcMain.handle('jangan-kirim-muat', () => janganKirim.muat());
+ipcMain.handle('jangan-kirim-tambah', (event, { nomor, nama, alasan }) => janganKirim.tambah(nomor, alasan || 'manual', nama || ''));
+ipcMain.handle('jangan-kirim-hapus', (event, nomor) => janganKirim.hapus(nomor));
+ipcMain.handle('broadcast-batas', () => ({
+    terkirimHariIni: broadcast.jumlahTerkirimHariIni(),
+    bawaan: broadcast.BATAS_HARIAN_BAWAAN,
+    maks: broadcast.BATAS_HARIAN_MAKS,
+    jedaLantai: broadcast.JEDA_LANTAI_DETIK,
+}));
 
 ipcMain.handle('autoreply-muat', () => autoreply.muat());
 
@@ -1204,10 +1241,11 @@ async function jalankanSemuaAturanFollowUp() {
         if (target.length === 0) continue;
 
         const hasilLengkap = [];
+        hasilKampanyeAktif.add(hasilLengkap);
         await broadcast.kirimBroadcast(
             target,
             aturan.template,
-            { jedaMinDetik: 30, jedaMaksDetik: 90, jedaBatchSetelah: 20, jedaBatchMinMenit: 5, jedaBatchMaksMenit: 10 },
+            { jedaMinDetik: 30, jedaMaksDetik: 90, jedaBatchSetelah: 20, jedaBatchMinMenit: 5, jedaBatchMaksMenit: 10, batasHarian: broadcast.BATAS_HARIAN_BAWAAN },
             null,
             (log) => {
                 mainWindow?.webContents.send('broadcast-log', log);
@@ -1218,6 +1256,7 @@ async function jalankanSemuaAturanFollowUp() {
             },
             { aktif: true, mulai: '08:00', selesai: '20:00' },
         );
+        hasilKampanyeAktif.delete(hasilLengkap);
 
         if (hasilLengkap.length > 0) {
             riwayat.simpanKampanye({ template: `[Follow Up: ${aturan.nama}] ` + aturan.template, hasil: hasilLengkap });

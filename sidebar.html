@@ -307,6 +307,102 @@
     .stat-ringkas { background: #fff; border-radius: 12px; padding: 14px 18px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
     .stat-ringkas .label { font-size: 12px; color: #6b7280; }
     .stat-ringkas .angka { font-size: 24px; font-weight: 600; color: #111827; margin-top: 2px; }
+
+    /* --- Tampilan baru tab Broadcast WA: langkah bernomor, panduan, pratinjau --- */
+    .bc-wrap { max-width: 980px; margin: 0 auto; }
+    .bc-hero {
+        display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;
+        background: linear-gradient(135deg, #065f46, #059669); color: #fff;
+        border-radius: 16px; padding: 22px 26px; margin-bottom: 16px;
+    }
+    .bc-hero h1 { font-size: 22px; margin-bottom: 4px; }
+    .bc-hero p { font-size: 13px; opacity: 0.92; max-width: 560px; line-height: 1.5; }
+    .bc-hero-status { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+    .bc-hero-label { font-size: 11px; opacity: 0.85; text-transform: uppercase; letter-spacing: .04em; }
+
+    .bc-panduan { background: #fff; border-radius: 12px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); border: 1px solid #d1fae5; }
+    .bc-panduan summary { list-style: none; cursor: pointer; padding: 14px 20px; font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 10px; }
+    .bc-panduan summary::-webkit-details-marker { display: none; }
+    .bc-ikon { width: 24px; height: 24px; border-radius: 50%; background: #059669; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; }
+    .bc-panah { margin-left: auto; font-size: 11px; font-weight: 500; color: #6b7280; }
+    .bc-panduan-isi { padding: 0 20px 18px; font-size: 13px; line-height: 1.6; color: #374151; }
+    .bc-langkah-panduan { padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+    .bc-tips { margin-top: 14px; background: #ecfdf5; border-radius: 10px; padding: 12px 16px; }
+    .bc-tips ul { padding-left: 18px; margin-top: 6px; display: flex; flex-direction: column; gap: 3px; }
+    .bc-panduan code, .bc-judul code { background: #f3f4f6; padding: 1px 6px; border-radius: 4px; font-size: 12px; }
+
+    .bc-langkah { background: #fff; border-radius: 14px; margin-bottom: 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); overflow: hidden; }
+    .bc-judul { display: flex; gap: 14px; align-items: flex-start; padding: 16px 20px 6px; }
+    .bc-judul h2 { font-size: 15px; margin-bottom: 2px; }
+    .bc-judul p { font-size: 12px; color: #6b7280; line-height: 1.5; }
+    .bc-no { flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; background: #059669; color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+    .bc-no-abu { background: #9ca3af; }
+    .bc-isi { padding: 6px 20px 18px 64px; }
+    .bc-ringan .bc-isi { padding-left: 64px; }
+    .bc-bagian { font-size: 12px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: .06em; margin: 22px 4px 10px; }
+
+    .bc-jumlah-pilih { margin-top: 8px; font-size: 12px; font-weight: 600; color: #065f46; background: #ecfdf5; display: inline-block; padding: 4px 12px; border-radius: 999px; }
+    .bc-jumlah-pilih.kosong { color: #6b7280; background: #f3f4f6; }
+
+    .bc-dua-kolom { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 8px; }
+    @media (max-width: 760px) { .bc-dua-kolom { grid-template-columns: 1fr; } .bc-isi { padding-left: 20px; } }
+    .bc-hitung { font-size: 11px; color: #6b7280; text-align: right; margin-top: 2px; }
+    .bc-pratinjau-label { font-size: 12px; color: #6b7280; margin-bottom: 6px; }
+    .bc-hp { background: #e5ddd5; border-radius: 12px; padding: 14px; min-height: 110px; }
+    .bc-gelembung { background: #dcf8c6; border-radius: 10px 10px 2px 10px; padding: 8px 12px; font-size: 13px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; max-width: 92%; margin-left: auto; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
+
+    .bc-grid-aman { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-top: 6px; }
+    .bc-opsi { border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+    .bc-opsi span { font-size: 12px; color: #6b7280; line-height: 1.45; }
+
+    .bc-kirim { border: 2px solid #a7f3d0; }
+    .bc-ringkas { background: #f0fdf4; border-radius: 10px; padding: 12px 16px; font-size: 13px; line-height: 1.6; color: #14532d; margin-bottom: 10px; }
+    #btn-kirim { background: #059669; font-size: 14px; padding: 10px 26px; }
+    #btn-kirim:disabled { background: #9ca3af; }
+    /* --- Dashboard status pengiriman --- */
+    #bc-dashboard { margin-top: 14px; }
+    .bc-progres { margin-bottom: 12px; }
+    .bc-progres-atas { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; margin-bottom: 6px; flex-wrap: wrap; }
+    .bc-progres-atas span { color: #6b7280; font-size: 12px; }
+    .bc-progres-bar { height: 12px; background: #e5e7eb; border-radius: 999px; overflow: hidden; }
+    #bc-progres-isi { height: 100%; width: 0; background: linear-gradient(90deg, #34d399, #059669); transition: width .4s; }
+    .bc-sedang { font-size: 13px; padding: 8px 12px; border-radius: 8px; background: #eff6ff; color: #1e40af; margin-bottom: 12px; display: none; }
+    .bc-sedang.istirahat { background: #fef3c7; color: #92400e; }
+    .bc-sedang.selesai { background: #ecfdf5; color: #065f46; }
+    #ringkasan-status { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 10px; margin-top: 0; }
+    .bc-kartu { border: 2px solid transparent; border-radius: 12px; padding: 10px 12px; cursor: pointer; text-align: left; font-family: inherit; background: #f3f4f6; }
+    .bc-kartu .bc-angka { font-size: 24px; font-weight: 700; line-height: 1.1; }
+    .bc-kartu .bc-label { font-size: 12px; font-weight: 600; margin-top: 2px; }
+    .bc-kartu.aktif { border-color: #111827; }
+    .bc-kartu.menunggu { background: #e5e7eb; color: #374151; }
+    .bc-kartu.terkirim { background: #dbeafe; color: #1e40af; }
+    .bc-kartu.sampai { background: #d1fae5; color: #065f46; }
+    .bc-kartu.dibaca { background: #a7f3d0; color: #064e3b; }
+    .bc-kartu.belum_sampai { background: #ffedd5; color: #9a3412; }
+    .bc-kartu.tidak_terdaftar { background: #fef3c7; color: #92400e; }
+    .bc-kartu.gagal { background: #fee2e2; color: #991b1b; }
+    .bc-aksi-bersih { margin-top: 12px; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 10px; padding: 10px 14px; font-size: 13px; color: #7c2d12; }
+    .bc-aksi-bersih .baris-form { margin-top: 6px; }
+    .bc-filter-info { font-size: 12px; color: #6b7280; margin: 10px 0 4px; min-height: 16px; }
+    .bc-filter-info a { color: #2563eb; cursor: pointer; margin-left: 6px; }
+    .bc-tabel-bungkus { max-height: 380px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px; }
+    .bc-tabel-bungkus #tabel-status { margin-top: 0; }
+    .bc-tabel-bungkus th { position: sticky; top: 0; background: #f9fafb; }
+    .tag-status.menunggu { background: #e5e7eb; color: #374151; }
+    .tag-status.sampai { background: #d1fae5; color: #065f46; }
+    .tag-status.dibaca { background: #a7f3d0; color: #064e3b; }
+    .tag-status.belum_sampai { background: #ffedd5; color: #9a3412; }
+    .tag-status.duga_blokir { background: #fecaca; color: #7f1d1d; }
+    .stat.terkirim { background: #dbeafe; color: #1e40af; }
+    .stat.sampai { background: #d1fae5; color: #065f46; }
+    .stat.dibaca { background: #a7f3d0; color: #064e3b; }
+    .stat.belum_sampai { background: #ffedd5; color: #9a3412; }
+    .bc-legenda { margin-top: 12px; font-size: 12px; color: #374151; }
+    .bc-legenda summary { cursor: pointer; font-weight: 600; color: #2563eb; }
+    .bc-legenda ul { padding-left: 18px; margin: 8px 0; display: flex; flex-direction: column; gap: 4px; line-height: 1.5; }
+    .bc-kartu.dilewati { background: #ede9fe; color: #5b21b6; }
+    .tag-status.dilewati { background: #ede9fe; color: #5b21b6; }
+    .badge.sesi-digantikan { background: #fee2e2; color: #991b1b; }
 </style>
 </head>
 <body>
@@ -512,131 +608,267 @@
 </div>
 
 <div id="broadcast-panel">
+  <div class="bc-wrap">
+
+    <div class="bc-hero">
+        <div>
+            <h1>Broadcast WhatsApp</h1>
+            <p>Kirim pesan promo atau info ke banyak pelanggan sekaligus, dengan pola kirim yang meniru orang mengetik supaya nomor tetap aman.</p>
+        </div>
+        <div class="bc-hero-status">
+            <span class="bc-hero-label">Status nomor Broadcast</span>
+            <span id="status-badge" class="badge terputus">terputus</span>
+        </div>
+    </div>
+
     <div id="kartu-statistik"></div>
 
-    <div class="kartu">
-        <strong>Status WhatsApp:</strong>
-        <span id="status-badge" class="badge terputus">terputus</span>
-        <button class="aksi bahaya kecil" id="btn-logout-wa" style="display:none;margin-left:8px;">Logout</button>
-        <div id="nomor-terhubung"></div>
-        <img id="qr-img" style="display:none;">
-    </div>
+    <details class="bc-panduan" id="bc-panduan">
+        <summary><span class="bc-ikon">?</span> Panduan cara memakai Broadcast WA <span class="bc-panah">buka / tutup</span></summary>
+        <div class="bc-panduan-isi">
+            <ol class="bc-langkah-panduan">
+                <li><b>Hubungkan nomor.</b> Di Langkah 1, scan QR dengan WhatsApp di HP nomor Broadcast (WhatsApp &gt; Perangkat tertaut &gt; Tautkan perangkat). Cukup sekali; setelah status <i>terhubung</i>, QR hilang.</li>
+                <li><b>Siapkan kontak.</b> Di Langkah 2, pelanggan dari Hanmar POS sudah otomatis ada. Tambah kontak baru satu per satu, atau unggah Excel (Nama, No WA, Grup). Pakai tombol <i>Unduh Template Excel</i> supaya formatnya benar.</li>
+                <li><b>Pilih penerima.</b> Di Langkah 3, centang kontak yang mau dikirimi. Pakai kotak cari dan filter grup untuk mempercepat. <i>Pilih semua</i> hanya memilih kontak yang tampil di layar.</li>
+                <li><b>Tulis pesan.</b> Di Langkah 4, tulis isi pesan. <code>{nama}</code> otomatis diganti nama penerima. Variasi kalimat ditulis <code>{siang|sore}</code>, nanti dipilih acak per penerima. Lihat hasilnya di kotak pratinjau.</li>
+                <li><b>Atur pengamanan.</b> Di Langkah 5, biarkan pengaturan bawaan kalau ragu. Semakin lambat dan semakin acak, semakin aman.</li>
+                <li><b>Kirim.</b> Di Langkah 6, cek ringkasan dan perkiraan waktu, lalu klik <i>Mulai Kirim</i>. Aplikasi harus tetap terbuka sampai selesai. Tombol <i>Hentikan</i> bisa dipakai kapan saja.</li>
+            </ol>
+            <div class="bc-tips">
+                <b>Tips supaya nomor aman dari banned</b>
+                <ul>
+                    <li>Mulai dari jumlah kecil (20-30 penerima per hari) kalau nomor masih baru, naikkan pelan-pelan.</li>
+                    <li>Kirim hanya ke pelanggan yang memang pernah berinteraksi atau membeli. Pesan ke orang yang tidak kenal sering dilaporkan spam.</li>
+                    <li>Jangan kirim pesan yang persis sama ke semua orang. Pakai <code>{nama}</code> dan variasi <code>{a|b}</code>.</li>
+                    <li>Biarkan simulasi mengetik tetap aktif, jeda 30-90 detik, dan istirahat panjang tiap 20 pesan.</li>
+                    <li>Aktifkan batas jam operasional supaya pesan tidak terkirim tengah malam.</li>
+                    <li>Kalau banyak yang membalas "stop" atau memblokir, hentikan dulu dan tunggu beberapa hari.</li>
+                </ul>
+            </div>
+        </div>
+    </details>
 
-    <div class="kartu">
-        <h3>Tambah Kontak Manual</h3>
-        <div class="baris-form">
-            <input type="text" id="input-nama-kontak" placeholder="Nama">
-            <input type="text" id="input-telepon-kontak" placeholder="No. WA (628...)">
-            <input type="text" id="input-grup-kontak" placeholder="Grup (opsional)">
-            <button class="aksi kecil" id="btn-tambah-kontak">Tambah</button>
+    <section class="bc-langkah">
+        <div class="bc-judul"><span class="bc-no">1</span><div><h2>Hubungkan nomor WhatsApp</h2><p id="petunjuk-status">Scan QR di bawah memakai WhatsApp di HP nomor Broadcast.</p></div></div>
+        <div class="bc-isi">
+            <div id="nomor-terhubung"></div>
+            <img id="qr-img" style="display:none;">
+            <button class="aksi bahaya kecil" id="btn-logout-wa" style="display:none;">Logout nomor ini</button>
         </div>
-        <div class="baris-form">
-            <button class="aksi sekunder kecil" id="btn-unduh-template">Unduh Template Excel</button>
-            <button class="aksi sekunder kecil" id="btn-upload-excel">Upload Excel (Nama, No WA, Grup)</button>
-            <span id="upload-excel-info" style="font-size:12px;color:#374151;"></span>
-        </div>
-    </div>
+    </section>
 
-    <div class="kartu">
-        <h3>Pilih Penerima</h3>
-        <div class="baris-form">
-            <input type="text" id="cari-pelanggan" placeholder="Cari nama...">
-            <select id="filter-grup"><option value="">Semua grup</option></select>
-            <label style="font-size:13px;"><input type="checkbox" id="pilih-semua"> Pilih semua</label>
+    <section class="bc-langkah">
+        <div class="bc-judul"><span class="bc-no">2</span><div><h2>Siapkan kontak</h2><p>Tambah kontak baru satu per satu atau unggah banyak sekaligus lewat Excel.</p></div></div>
+        <div class="bc-isi">
+            <div class="baris-form">
+                <input type="text" id="input-nama-kontak" placeholder="Nama">
+                <input type="text" id="input-telepon-kontak" placeholder="No. WA (628...)">
+                <input type="text" id="input-grup-kontak" placeholder="Grup (opsional)">
+                <button class="aksi kecil" id="btn-tambah-kontak">Tambah</button>
+            </div>
+            <div class="baris-form">
+                <button class="aksi sekunder kecil" id="btn-unduh-template">Unduh Template Excel</button>
+                <button class="aksi sekunder kecil" id="btn-upload-excel">Upload Excel (Nama, No WA, Grup)</button>
+                <span id="upload-excel-info" style="font-size:12px;color:#374151;"></span>
+            </div>
         </div>
-        <div id="daftar-pelanggan" class="list-pelanggan"></div>
-        <div class="baris-form">
-            <input type="text" id="input-grup-massal" placeholder="Nama grup baru (mis. Dalam Kota)">
-            <button class="aksi sekunder kecil" id="btn-terapkan-grup">Terapkan ke yang Dicentang</button>
-            <button class="aksi sekunder kecil" id="btn-export-kontak">Export Semua ke Excel</button>
-        </div>
-    </div>
+    </section>
 
-    <div class="kartu">
-        <h3>Template Pesan</h3>
-        <div class="baris-form">
-            <select id="pilih-template-tersimpan"><option value="">— Template tersimpan —</option></select>
-            <span id="hapus-template-tersimpan" style="display:none;color:#991b1b;cursor:pointer;font-size:12px;">Hapus template ini</span>
+    <section class="bc-langkah">
+        <div class="bc-judul"><span class="bc-no">3</span><div><h2>Pilih penerima</h2><p>Centang pelanggan yang mau dikirimi pesan. Gunakan pencarian dan filter grup.</p></div></div>
+        <div class="bc-isi">
+            <div class="baris-form">
+                <input type="text" id="cari-pelanggan" placeholder="Cari nama...">
+                <select id="filter-grup"><option value="">Semua grup</option></select>
+                <label style="font-size:13px;"><input type="checkbox" id="pilih-semua"> Pilih semua</label>
+            </div>
+            <div id="daftar-pelanggan" class="list-pelanggan"></div>
+            <div class="bc-jumlah-pilih" id="bc-jumlah-pilih">Belum ada penerima dipilih</div>
+            <div class="baris-form">
+                <input type="text" id="input-grup-massal" placeholder="Nama grup baru (mis. Dalam Kota)">
+                <button class="aksi sekunder kecil" id="btn-terapkan-grup">Terapkan ke yang Dicentang</button>
+                <button class="aksi sekunder kecil" id="btn-export-kontak">Export Semua ke Excel</button>
+            </div>
         </div>
-        <span style="font-size:12px;color:#6b7280;">{nama} = nama penerima. {opsi1|opsi2|opsi3} = variasi kalimat acak (anti pola sama persis).</span>
-        <textarea id="template-pesan" placeholder="Halo {nama}, {selamat siang|met siang} kak..."></textarea>
-        <div class="baris-form">
-            <button class="aksi sekunder kecil" id="btn-pilih-lampiran">+ Lampirkan Foto/Video/PDF</button>
-            <span id="lampiran-info"></span>
-            <span id="hapus-lampiran" style="display:none;color:#991b1b;cursor:pointer;font-size:12px;">Hapus</span>
-        </div>
-        <div class="baris-form">
-            <button class="aksi sekunder kecil" id="btn-simpan-template">Simpan Template Ini</button>
-        </div>
-    </div>
+    </section>
 
-    <div class="kartu">
-        <h3>Jeda Anti-Banned</h3>
-        <div>Jeda antar pesan (detik): <input type="number" id="jeda-min" value="30" style="width:60px;"> sampai <input type="number" id="jeda-maks" value="90" style="width:60px;"></div>
-        <div style="margin-top:8px;">Istirahat panjang tiap <input type="number" id="jeda-batch-setelah" value="20" style="width:50px;"> pesan, selama
-            <input type="number" id="jeda-batch-min" value="5" style="width:50px;"> - <input type="number" id="jeda-batch-maks" value="10" style="width:50px;"> menit
-            (isi 0 di kolom pertama kalau tidak perlu istirahat panjang)
+    <section class="bc-langkah">
+        <div class="bc-judul"><span class="bc-no">4</span><div><h2>Tulis pesan</h2><p>Gunakan <code>{nama}</code> untuk nama penerima dan <code>{opsi1|opsi2}</code> untuk variasi kalimat acak.</p></div></div>
+        <div class="bc-isi">
+            <div class="baris-form">
+                <select id="pilih-template-tersimpan"><option value="">— Template tersimpan —</option></select>
+                <span id="hapus-template-tersimpan" style="display:none;color:#991b1b;cursor:pointer;font-size:12px;">Hapus template ini</span>
+            </div>
+            <div class="bc-dua-kolom">
+                <div>
+                    <textarea id="template-pesan" placeholder="Halo {nama}, {selamat siang|met siang} kak..."></textarea>
+                    <div class="bc-hitung" id="bc-hitung-huruf">0 karakter</div>
+                </div>
+                <div>
+                    <div class="bc-pratinjau-label">Pratinjau (contoh penerima: Budi)</div>
+                    <div class="bc-hp"><div class="bc-gelembung" id="bc-pratinjau">Pesan Anda akan tampil di sini.</div></div>
+                </div>
+            </div>
+            <div class="baris-form">
+                <button class="aksi sekunder kecil" id="btn-pilih-lampiran">+ Lampirkan Foto/Video/PDF</button>
+                <span id="lampiran-info"></span>
+                <span id="hapus-lampiran" style="display:none;color:#991b1b;cursor:pointer;font-size:12px;">Hapus</span>
+                <button class="aksi sekunder kecil" id="btn-simpan-template" style="margin-left:auto;">Simpan Template Ini</button>
+            </div>
         </div>
-        <div style="margin-top:8px;">
-            <label><input type="checkbox" id="jam-operasional-aktif"> Batasi jam operasional</label>
-            — kirim cuma antara <input type="text" id="jam-operasional-mulai" value="08:00" style="width:60px;" placeholder="08:00">
-            sampai <input type="text" id="jam-operasional-selesai" value="20:00" style="width:60px;" placeholder="20:00">
-            (otomatis jeda di luar jam ini, lanjut sendiri besok)
-        </div>
-    </div>
+    </section>
 
-    <div class="kartu">
-        <h3>Auto-Reply (balas otomatis pesan masuk ke nomor Broadcast)</h3>
-        <label><input type="checkbox" id="autoreply-aktif"> Aktifkan auto-reply</label>
-        <div id="daftar-aturan-autoreply" style="margin-top:8px;"></div>
-        <div class="baris-form">
-            <input type="text" id="input-kata-kunci" placeholder="Kata kunci (pisah koma, mis. harga,berapa)">
-            <input type="text" id="input-balasan" placeholder="Balasan otomatis">
-            <button class="aksi sekunder kecil" id="btn-tambah-aturan">+ Tambah Aturan</button>
+    <section class="bc-langkah">
+        <div class="bc-judul"><span class="bc-no">5</span><div><h2>Pengamanan anti-banned</h2><p>Atur seberapa pelan dan acak pesan dikirim. Pengaturan bawaan sudah aman untuk kebanyakan kasus.</p></div></div>
+        <div class="bc-isi">
+            <div class="bc-grid-aman">
+                <div class="bc-opsi">
+                    <b>Jeda antar pesan</b>
+                    <span>Waktu tunggu acak antar pesan. Dikunci minimal 15 detik demi keamanan, dan tiap pesan di seluruh jalur (manual, follow-up, server) diberi jarak minimal 10 detik.</span>
+                    <div><input type="number" id="jeda-min" value="30" min="15" style="width:64px;"> sampai <input type="number" id="jeda-maks" value="90" style="width:64px;"> detik</div>
+                </div>
+                <div class="bc-opsi">
+                    <b>Simulasi mengetik</b>
+                    <span>Penerima melihat "sedang mengetik..." sebelum pesan masuk, selama waktu sesuai panjang pesan.</span>
+                    <div>
+                        <label><input type="checkbox" id="simulasi-mengetik-aktif" checked> Aktif</label>
+                        &nbsp;kecepatan
+                        <select id="simulasi-mengetik-kecepatan">
+                            <option value="lambat">Lambat</option>
+                            <option value="sedang" selected>Sedang</option>
+                            <option value="cepat">Cepat</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="bc-opsi">
+                    <b>Istirahat panjang</b>
+                    <span>Berhenti beberapa menit setelah sekian pesan. Isi 0 kalau tidak perlu.</span>
+                    <div>Tiap <input type="number" id="jeda-batch-setelah" value="20" style="width:56px;"> pesan, istirahat
+                        <input type="number" id="jeda-batch-min" value="5" style="width:50px;"> - <input type="number" id="jeda-batch-maks" value="10" style="width:50px;"> menit</div>
+                </div>
+                <div class="bc-opsi">
+                    <b>Batas kirim per hari</b>
+                    <span>Pengiriman berhenti otomatis setelah mencapai batas ini (semua jalur dihitung), sisanya dilanjutkan besok. Dikunci maksimal 300.</span>
+                    <div><input type="number" id="batas-harian" value="150" min="1" max="300" style="width:72px;"> pesan/hari</div>
+                    <span id="info-batas-harian"></span>
+                </div>
+                <div class="bc-opsi">
+                    <b>Jam operasional</b>
+                    <span>Di luar jam ini pengiriman berhenti dan lanjut sendiri keesokan harinya.</span>
+                    <div>
+                        <label><input type="checkbox" id="jam-operasional-aktif"> Batasi</label>
+                        <input type="text" id="jam-operasional-mulai" value="08:00" style="width:64px;" placeholder="08:00"> -
+                        <input type="text" id="jam-operasional-selesai" value="20:00" style="width:64px;" placeholder="20:00">
+                    </div>
+                </div>
+            </div>
         </div>
-        <div style="margin-top:8px;">
-            <label style="font-size:13px;">Balasan default (kalau tidak ada kata kunci cocok, kosongkan kalau tidak mau balas):</label>
-            <input type="text" id="input-balasan-default" placeholder="Terima kasih sudah menghubungi Hanmar, admin akan segera membalas." style="width:100%;margin-top:4px;">
-        </div>
-        <div class="baris-form">
-            <button class="aksi kecil" id="btn-simpan-autoreply">Simpan Pengaturan Auto-Reply</button>
-        </div>
-    </div>
+    </section>
 
-    <div class="kartu">
-        <h3>Auto Follow Up</h3>
-        <span style="font-size:12px;color:#6b7280;">Kirim ulang otomatis ke kontak 1 grup yang belum di-follow-up dalam sekian hari. Dicek otomatis tiap beberapa jam (aplikasi harus tetap terbuka), jam 08.00-20.00 saja.</span>
-        <div id="daftar-aturan-followup" style="margin-top:8px;"></div>
-        <div class="baris-form">
-            <input type="text" id="fu-nama" placeholder="Nama aturan (mis. Follow Up Mingguan)">
-            <select id="fu-grup"><option value="">— pilih grup —</option></select>
-            <input type="number" id="fu-interval" placeholder="Tiap berapa hari" style="width:120px;">
+    <section class="bc-langkah bc-kirim">
+        <div class="bc-judul"><span class="bc-no">6</span><div><h2>Kirim</h2><p>Periksa ringkasan di bawah, lalu mulai. Biarkan aplikasi tetap terbuka sampai selesai.</p></div></div>
+        <div class="bc-isi">
+            <div class="bc-ringkas" id="bc-ringkas">Pilih penerima dan tulis pesan dulu.</div>
+            <div class="baris-form">
+                <button class="aksi" id="btn-kirim">Mulai Kirim</button>
+                <button class="aksi bahaya" id="btn-stop" style="display:none;">Hentikan</button>
+            </div>
+            <div id="info-jam-operasional" style="display:none;margin-top:8px;padding:8px 12px;background:#fef3c7;color:#92400e;border-radius:8px;font-size:13px;"></div>
+            <div id="bc-dashboard" style="display:none;">
+                <div class="bc-progres">
+                    <div class="bc-progres-atas"><b id="bc-progres-judul">Memulai...</b><span id="bc-progres-teks"></span></div>
+                    <div class="bc-progres-bar"><div id="bc-progres-isi"></div></div>
+                </div>
+                <div id="bc-sedang" class="bc-sedang"></div>
+                <div id="ringkasan-status"></div>
+                <div id="bc-aksi-bersih" class="bc-aksi-bersih" style="display:none;"></div>
+                <div class="bc-filter-info" id="bc-filter-info"></div>
+                <div class="bc-tabel-bungkus">
+                    <table id="tabel-status">
+                        <thead><tr><th>Nama</th><th>Telepon</th><th>Status</th><th>Keterangan</th></tr></thead>
+                        <tbody id="tabel-status-body"></tbody>
+                    </table>
+                </div>
+            </div>
+            <details class="bc-legenda">
+                <summary>Arti tiap status</summary>
+                <ul>
+                    <li><b>Antri</b> &mdash; belum giliran dikirim.</li>
+                    <li><b>Terkirim</b> &mdash; sudah diterima server WhatsApp, belum diketahui sampai ke HP penerima (centang 1).</li>
+                    <li><b>Sampai</b> &mdash; sudah masuk ke HP penerima (centang 2).</li>
+                    <li><b>Dibaca</b> &mdash; sudah dibuka penerima (centang biru). Hanya muncul kalau penerima mengaktifkan tanda baca.</li>
+                    <li><b>Belum sampai</b> &mdash; terkirim ke server tapi lebih dari 15 menit belum sampai ke HP penerima. Penyebabnya bisa nomor kita <b>diblokir</b>, HP penerima mati/tanpa internet, atau WA-nya sudah dihapus. WhatsApp tidak memberi tahu langsung siapa yang memblokir. Kalau sebuah nomor <b>belum sampai di 2 kampanye atau lebih</b>, ditandai <b>Diduga memblokir</b> dan sebaiknya dihapus dari daftar.</li>
+                    <li><b>Bukan nomor WA</b> &mdash; nomor tidak terdaftar di WhatsApp (salah ketik atau tidak punya WA). Sebaiknya dihapus dari daftar.</li>
+                    <li><b>Gagal</b> &mdash; gagal dikirim karena kendala teknis atau format nomor tidak valid; lihat kolom Keterangan.</li>
+                    <li><b>Dilewati</b> &mdash; sengaja tidak dikirim: nomor ganda di daftar, atau ada di daftar jangan kirim (mis. sudah minta berhenti).</li>
+                </ul>
+                <p>Status Sampai/Dibaca bisa terus berubah beberapa menit setelah pengiriman selesai, selama aplikasi tetap terbuka.</p>
+            </details>
         </div>
-        <div class="baris-form">
-            <input type="text" id="fu-template" placeholder="Template pesan follow up (pakai {nama})" style="flex:2;">
-            <button class="aksi sekunder kecil" id="btn-tambah-followup">+ Tambah Aturan</button>
-        </div>
-        <div class="baris-form">
-            <button class="aksi kecil" id="btn-jalankan-followup">Jalankan Sekarang (uji coba)</button>
-        </div>
-    </div>
+    </section>
 
-    <div class="kartu">
-        <button class="aksi" id="btn-kirim">Mulai Kirim</button>
-        <button class="aksi bahaya" id="btn-stop" style="display:none;">Hentikan</button>
-        <div id="info-jam-operasional" style="display:none;margin-top:8px;padding:8px 12px;background:#fef3c7;color:#92400e;border-radius:8px;font-size:13px;"></div>
-        <div id="ringkasan-status"></div>
-        <table id="tabel-status" style="display:none;">
-            <thead><tr><th>Nama</th><th>Telepon</th><th>Status</th><th>Keterangan</th></tr></thead>
-            <tbody id="tabel-status-body"></tbody>
-        </table>
-    </div>
+    <div class="bc-bagian">Otomatisasi (opsional)</div>
 
-    <div class="kartu">
-        <h3>Riwayat Broadcast</h3>
-        <button class="aksi sekunder kecil" id="btn-muat-riwayat">Muat Riwayat</button>
-        <div id="daftar-riwayat" style="margin-top:10px;"></div>
-    </div>
+    <section class="bc-langkah bc-ringan">
+        <div class="bc-judul"><span class="bc-no bc-no-abu">A</span><div><h2>Auto-Reply</h2><p>Balas otomatis pesan yang masuk ke nomor Broadcast berdasarkan kata kunci.</p></div></div>
+        <div class="bc-isi">
+            <label><input type="checkbox" id="autoreply-aktif"> Aktifkan auto-reply</label>
+            <div id="daftar-aturan-autoreply" style="margin-top:8px;"></div>
+            <div class="baris-form">
+                <input type="text" id="input-kata-kunci" placeholder="Kata kunci (pisah koma, mis. harga,berapa)">
+                <input type="text" id="input-balasan" placeholder="Balasan otomatis">
+                <button class="aksi sekunder kecil" id="btn-tambah-aturan">+ Tambah Aturan</button>
+            </div>
+            <div style="margin-top:8px;">
+                <label style="font-size:13px;">Balasan default (kalau tidak ada kata kunci cocok, kosongkan kalau tidak mau balas):</label>
+                <input type="text" id="input-balasan-default" placeholder="Terima kasih sudah menghubungi Hanmar, admin akan segera membalas." style="width:100%;margin-top:4px;">
+            </div>
+            <div class="baris-form">
+                <button class="aksi kecil" id="btn-simpan-autoreply">Simpan Pengaturan Auto-Reply</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="bc-langkah bc-ringan">
+        <div class="bc-judul"><span class="bc-no bc-no-abu">B</span><div><h2>Auto Follow Up</h2><p>Kirim ulang otomatis ke kontak 1 grup yang belum di-follow-up dalam sekian hari. Dicek tiap beberapa jam (aplikasi harus terbuka), jam 08.00-20.00 saja.</p></div></div>
+        <div class="bc-isi">
+            <div id="daftar-aturan-followup" style="margin-top:8px;"></div>
+            <div class="baris-form">
+                <input type="text" id="fu-nama" placeholder="Nama aturan (mis. Follow Up Mingguan)">
+                <select id="fu-grup"><option value="">— pilih grup —</option></select>
+                <input type="number" id="fu-interval" placeholder="Tiap berapa hari" style="width:120px;">
+            </div>
+            <div class="baris-form">
+                <input type="text" id="fu-template" placeholder="Template pesan follow up (pakai {nama})" style="flex:2;">
+                <button class="aksi sekunder kecil" id="btn-tambah-followup">+ Tambah Aturan</button>
+            </div>
+            <div class="baris-form">
+                <button class="aksi kecil" id="btn-jalankan-followup">Jalankan Sekarang (uji coba)</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="bc-langkah bc-ringan">
+        <div class="bc-judul"><span class="bc-no bc-no-abu">C</span><div><h2>Daftar jangan kirim</h2><p>Nomor di daftar ini otomatis dilewati di semua pengiriman. Terisi sendiri saat penerima membalas "stop"/"berhenti", atau saat Anda mengeluarkan nomor dari dashboard.</p></div></div>
+        <div class="bc-isi">
+            <div class="baris-form">
+                <input type="text" id="jk-nomor" placeholder="Nomor (08xx / 628xx)">
+                <input type="text" id="jk-nama" placeholder="Nama (opsional)">
+                <button class="aksi sekunder kecil" id="btn-jk-tambah">+ Tambah</button>
+            </div>
+            <div id="daftar-jangan-kirim" class="list-pelanggan" style="margin-top:8px;"></div>
+        </div>
+    </section>
+
+    <section class="bc-langkah bc-ringan">
+        <div class="bc-judul"><span class="bc-no bc-no-abu">D</span><div><h2>Riwayat Broadcast</h2><p>Daftar kampanye yang pernah dikirim beserta hasilnya.</p></div></div>
+        <div class="bc-isi">
+            <button class="aksi sekunder kecil" id="btn-muat-riwayat">Muat Riwayat</button>
+            <div id="daftar-riwayat" style="margin-top:10px;"></div>
+        </div>
+    </section>
+
+  </div>
 </div>
 
 <script>
@@ -1928,15 +2160,155 @@
         window.chatHub.hentikanBroadcast();
     });
 
-    function perbaruiRingkasan() {
-        const el = document.getElementById('ringkasan-status');
-        el.innerHTML = Object.entries(ringkasan).map(([status, jumlah]) =>
-            `<span class="stat ${status}">${labelStatus(status)}: ${jumlah}</span>`
-        ).join('');
-    }
+    // ===== Dashboard status pengiriman =====
+    const KARTU_STATUS = [
+        { kunci: 'menunggu', label: 'Antri' },
+        { kunci: 'terkirim', label: 'Terkirim' },
+        { kunci: 'sampai', label: 'Sampai' },
+        { kunci: 'dibaca', label: 'Dibaca' },
+        { kunci: 'belum_sampai', label: 'Belum sampai' },
+        { kunci: 'tidak_terdaftar', label: 'Bukan nomor WA' },
+        { kunci: 'gagal', label: 'Gagal' },
+        { kunci: 'dilewati', label: 'Dilewati' },
+    ];
+    const TINGKAT_PESAN = { terkirim: 1, belum_sampai: 2, sampai: 3, dibaca: 4 };
+    let dash = null;
+    let detikDash = null;
 
     function labelStatus(status) {
-        return { terkirim: 'Terkirim', gagal: 'Gagal', tidak_terdaftar: 'Tidak Terdaftar WA', menunggu: 'Menunggu' }[status] || status;
+        return { menunggu: 'Antri', memeriksa: 'Memeriksa', terkirim: 'Terkirim', sampai: 'Sampai', dibaca: 'Dibaca',
+            belum_sampai: 'Belum sampai', tidak_terdaftar: 'Bukan nomor WA', gagal: 'Gagal', dilewati: 'Dilewati' }[status] || status;
+    }
+
+    function dugaBlokir(b) {
+        return b.status === 'belum_sampai' && (dash.jejakBelumSampai[b.telepon] || 0) >= 1;
+    }
+
+    function formatDurasiDash(ms) {
+        const menit = Math.round(ms / 60000);
+        if (menit < 1) return 'kurang dari 1 menit';
+        if (menit < 60) return menit + ' menit';
+        return Math.floor(menit / 60) + ' jam ' + (menit % 60) + ' menit';
+    }
+
+    function mulaiDashboard(penerima, jejakBelumSampai) {
+        dash = { baris: new Map(), mulai: Date.now(), selesai: false, filter: null, catatan: '', selesaiCatatan: '', jejakBelumSampai };
+        penerima.forEach((p) => dash.baris.set(String(p.id), { id: p.id, nama: p.nama, telepon: p.telepon, status: 'menunggu', ket: '' }));
+        document.getElementById('bc-dashboard').style.display = 'block';
+        clearInterval(detikDash);
+        detikDash = setInterval(() => { if (dash && !dash.selesai) perbaruiRingkasan(); }, 1000);
+        perbaruiRingkasan();
+    }
+
+    function perbaruiRingkasan() {
+        if (!dash) return;
+        const semua = [...dash.baris.values()];
+        const hitung = {};
+        semua.forEach((b) => { const k = b.status === 'memeriksa' ? 'menunggu' : b.status; hitung[k] = (hitung[k] || 0) + 1; });
+        const total = semua.length;
+        const selesaiProses = total - (hitung.menunggu || 0);
+        const persen = total ? Math.round((selesaiProses / total) * 100) : 0;
+
+        document.getElementById('bc-progres-judul').textContent = dash.selesai
+            ? `Selesai diproses: ${selesaiProses} dari ${total} penerima`
+            : `Mengirim: ${selesaiProses} dari ${total} penerima (${persen}%)`;
+        const lalu = Date.now() - dash.mulai;
+        let teks = 'Berjalan ' + formatDurasiDash(lalu);
+        if (!dash.selesai && selesaiProses >= 3 && selesaiProses < total) {
+            teks += ' · perkiraan sisa ' + formatDurasiDash((lalu / selesaiProses) * (total - selesaiProses));
+        }
+        document.getElementById('bc-progres-teks').textContent = teks;
+        document.getElementById('bc-progres-isi').style.width = persen + '%';
+
+        const sedang = document.getElementById('bc-sedang');
+        sedang.style.display = dash.catatan ? 'block' : 'none';
+        sedang.textContent = dash.catatan || '';
+        sedang.className = 'bc-sedang' + dash.selesaiCatatan;
+
+        document.getElementById('ringkasan-status').innerHTML = KARTU_STATUS.map((k) =>
+            `<button type="button" class="bc-kartu ${k.kunci}${dash.filter === k.kunci ? ' aktif' : ''}" data-filter="${k.kunci}">
+                <div class="bc-angka">${hitung[k.kunci] || 0}</div><div class="bc-label">${k.label}</div>
+            </button>`).join('');
+        document.querySelectorAll('#ringkasan-status .bc-kartu').forEach((el) => el.addEventListener('click', () => {
+            dash.filter = dash.filter === el.dataset.filter ? null : el.dataset.filter;
+            perbaruiRingkasan();
+        }));
+
+        renderAksiBersih();
+        renderTabelStatus(semua);
+    }
+
+    function renderTabelStatus(semua) {
+        const tampil = dash.filter ? semua.filter((b) => (b.status === 'memeriksa' ? 'menunggu' : b.status) === dash.filter) : semua;
+        document.getElementById('bc-filter-info').innerHTML = dash.filter
+            ? `Menampilkan ${tampil.length} penerima berstatus <b>${labelStatus(dash.filter)}</b><a id="bc-reset-filter">tampilkan semua</a>`
+            : 'Klik salah satu kotak status di atas untuk menyaring daftar.';
+        const reset = document.getElementById('bc-reset-filter');
+        if (reset) reset.addEventListener('click', () => { dash.filter = null; perbaruiRingkasan(); });
+
+        document.getElementById('tabel-status-body').innerHTML = tampil.map((b) => {
+            const duga = dugaBlokir(b);
+            const tag = duga
+                ? '<span class="tag-status duga_blokir">Diduga memblokir</span>'
+                : `<span class="tag-status ${b.status}">${labelStatus(b.status)}</span>`;
+            let ket = b.ket || '';
+            if (duga) ket = `Belum sampai juga di ${dash.jejakBelumSampai[b.telepon]} kampanye sebelumnya. Sebaiknya dihapus dari daftar.`;
+            else if (b.status === 'belum_sampai') ket = 'Belum sampai >15 menit: bisa diblokir, HP mati, atau WA dihapus.';
+            else if (b.status === 'tidak_terdaftar') ket = 'Nomor tidak terdaftar di WhatsApp. Sebaiknya dihapus dari daftar.';
+            return `<tr><td>${b.nama}</td><td>${b.telepon}</td><td>${tag}</td><td>${ket}</td></tr>`;
+        }).join('');
+    }
+
+    function renderAksiBersih() {
+        const kotak = document.getElementById('bc-aksi-bersih');
+        const semua = [...dash.baris.values()];
+        const bukanWa = semua.filter((b) => b.status === 'tidak_terdaftar');
+        const blokir = semua.filter((b) => dugaBlokir(b));
+        if (bukanWa.length === 0 && blokir.length === 0) { kotak.style.display = 'none'; return; }
+        kotak.style.display = 'block';
+        kotak.innerHTML = `<b>Bersihkan daftar broadcast</b><br>
+            ${bukanWa.length} nomor bukan WA, ${blokir.length} nomor diduga memblokir. Mengeluarkannya membuat kampanye berikutnya lebih aman dan lebih cepat.
+            <div class="baris-form">
+                <button class="aksi sekunder kecil" id="bc-hapus-bukan-wa" ${bukanWa.length ? '' : 'disabled'}>Keluarkan ${bukanWa.length} nomor bukan WA</button>
+                <button class="aksi sekunder kecil" id="bc-hapus-blokir" ${blokir.length ? '' : 'disabled'}>Keluarkan ${blokir.length} nomor diduga memblokir</button>
+                <button class="aksi sekunder kecil" id="bc-salin-bermasalah">Salin daftar bermasalah</button>
+            </div>`;
+        document.getElementById('bc-hapus-bukan-wa').addEventListener('click', () => hapusDariDaftar(bukanWa, 'bukan nomor WA'));
+        document.getElementById('bc-hapus-blokir').addEventListener('click', () => hapusDariDaftar(blokir, 'diduga memblokir'));
+        document.getElementById('bc-salin-bermasalah').addEventListener('click', async () => {
+            const teks = [
+                ...bukanWa.map((b) => `${b.nama}\t${b.telepon}\tBukan nomor WA`),
+                ...blokir.map((b) => `${b.nama}\t${b.telepon}\tDiduga memblokir`),
+            ].join('\n');
+            try { await navigator.clipboard.writeText(teks); toast('Daftar disalin ke clipboard.', 'sukses'); }
+            catch { toast('Gagal menyalin daftar.', 'gagal'); }
+        });
+    }
+
+    async function hapusDariDaftar(daftar, alasan) {
+        const idManual = new Set(kontakManual.map((k) => String(k.id)));
+        const manual = daftar.filter((b) => idManual.has(String(b.id)));
+        const dariPos = daftar.filter((b) => !idManual.has(String(b.id)));
+        const pesanPos = dariPos.length ? `\n${dariPos.length} nomor berasal dari data pelanggan Hanmar POS: tidak dihapus dari POS, tapi dimasukkan ke "Daftar jangan kirim" supaya tidak dikirimi lagi.` : '';
+        if (!confirm(`Keluarkan ${daftar.length} nomor (${alasan}) dari daftar broadcast?\n${manual.length} kontak manual akan dihapus.${pesanPos}`)) return;
+        for (const b of manual) await window.chatHub.hapusKontak(b.id);
+        for (const b of dariPos) await window.chatHub.tambahJanganKirim({ nomor: b.telepon, nama: b.nama, alasan });
+        await muatSemuaKontak();
+        await renderJanganKirim();
+        toast(`${daftar.length} nomor dikeluarkan dari daftar broadcast.`, 'sukses');
+    }
+
+    function terapkanLogDashboard(log) {
+        if (!dash || log.id === undefined || log.id === null) return;
+        const baris = dash.baris.get(String(log.id));
+        if (!baris) return;
+        const lama = TINGKAT_PESAN[baris.status];
+        const baru = TINGKAT_PESAN[log.status];
+        if (lama && baru && baru <= lama) return;
+        baris.status = log.status;
+        baris.ket = log.pesanError || '';
+        if (log.status === 'memeriksa') { dash.catatan = `Sedang memproses: ${log.nama}`; dash.selesaiCatatan = ''; }
+        perbaruiRingkasan();
     }
 
     document.getElementById('btn-kirim').addEventListener('click', async () => {
@@ -1946,7 +2318,15 @@
 
         if (penerima.length === 0) { toast('Pilih minimal 1 penerima.', 'gagal'); return; }
         if (!template) { toast('Isi template pesan dulu.', 'gagal'); return; }
-        if (!confirm(`Kirim ke ${penerima.length} penerima?`)) return;
+        const batas = await window.chatHub.muatBatasBroadcast();
+        const batasDipakai = Math.min(batas.maks, Number(document.getElementById('batas-harian').value) || batas.bawaan);
+        const sisaKuota = Math.max(0, batasDipakai - batas.terkirimHariIni);
+        if (sisaKuota === 0) { toast(`Batas kirim harian (${batasDipakai}) sudah tercapai. Lanjutkan besok atau naikkan batas (maksimal ${batas.maks}).`, 'gagal'); return; }
+        const tanpaVariasi = !/\{nama\}/i.test(template) && !/\{[^{}|]+\|[^{}]+\}/.test(template);
+        const catatan = [];
+        if (penerima.length > sisaKuota) catatan.push(`Sisa kuota hari ini ${sisaKuota} pesan, jadi hanya ${sisaKuota} yang terkirim hari ini, sisanya antri.`);
+        if (penerima.length >= 5 && tanpaVariasi) catatan.push('Pesan ini IDENTIK untuk semua penerima (tanpa {nama} atau variasi {a|b}). Pesan seragam lebih mudah dianggap spam.');
+        if (!confirm(`Kirim ke ${penerima.length} penerima?` + (catatan.length ? '\n\n' + catatan.join('\n') : ''))) return;
 
         const btnKirim = document.getElementById('btn-kirim');
         const btnStop = document.getElementById('btn-stop');
@@ -1954,12 +2334,13 @@
         btnKirim.textContent = 'Sedang mengirim...';
         btnStop.style.display = 'inline-block';
 
-        const tabel = document.getElementById('tabel-status');
-        const tbody = document.getElementById('tabel-status-body');
-        tbody.innerHTML = '';
-        tabel.style.display = 'table';
-        ringkasan = { menunggu: penerima.length };
-        perbaruiRingkasan();
+        const jejakBelumSampai = {};
+        try {
+            (await window.chatHub.daftarRiwayat()).forEach((k) => k.hasil.forEach((h) => {
+                if (h.status === 'belum_sampai') jejakBelumSampai[h.telepon] = (jejakBelumSampai[h.telepon] || 0) + 1;
+            }));
+        } catch { /* riwayat gagal dibaca: dashboard tetap jalan tanpa deteksi berulang */ }
+        mulaiDashboard(penerima, jejakBelumSampai);
 
         const jeda = {
             jedaMinDetik: Number(document.getElementById('jeda-min').value) || 30,
@@ -1967,6 +2348,11 @@
             jedaBatchSetelah: Number(document.getElementById('jeda-batch-setelah').value) || 0,
             jedaBatchMinMenit: Number(document.getElementById('jeda-batch-min').value) || 5,
             jedaBatchMaksMenit: Number(document.getElementById('jeda-batch-maks').value) || 10,
+            batasHarian: Number(document.getElementById('batas-harian').value) || 150,
+            simulasiMengetik: {
+                aktif: document.getElementById('simulasi-mengetik-aktif').checked,
+                kecepatan: document.getElementById('simulasi-mengetik-kecepatan').value,
+            },
         };
 
         const jamOperasional = {
@@ -1990,7 +2376,7 @@
     });
 
     function labelStatusRiwayat(status) {
-        return { terkirim: 'Terkirim', gagal: 'Gagal', tidak_terdaftar: 'Tidak Terdaftar/Tidak Aktif' }[status] || status;
+        return { terkirim: 'Terkirim', sampai: 'Sampai', dibaca: 'Dibaca', belum_sampai: 'Belum sampai', gagal: 'Gagal', tidak_terdaftar: 'Bukan nomor WA' }[status] || status;
     }
 
     async function muatRiwayat() {
@@ -2029,26 +2415,40 @@
         }
         infoJam.style.display = 'none';
 
-        if (log.status === 'selesai' || log.status === 'dihentikan' || log.status === 'jeda_panjang') {
+        if (!dash) return;
+
+        if (log.status === 'jeda_panjang') {
+            dash.catatan = `Istirahat panjang sekitar ${log.menit} menit (pengaman anti-banned). Pengiriman lanjut otomatis.`;
+            dash.selesaiCatatan = ' istirahat';
+            perbaruiRingkasan();
+            return;
+        }
+        if (log.status === 'menunggu_koneksi') {
+            dash.catatan = 'Koneksi WhatsApp terputus. Menunggu tersambung kembali, pengiriman lanjut otomatis (maksimal 30 menit).';
+            dash.selesaiCatatan = ' istirahat';
+            perbaruiRingkasan();
+            return;
+        }
+        if (log.status === 'batas_harian') {
+            dash.selesai = true;
+            dash.catatan = `Batas kirim harian (${log.batas} pesan) tercapai, pengiriman dihentikan demi keamanan nomor. Penerima yang masih "Antri" bisa dikirim besok.`;
+            dash.selesaiCatatan = ' istirahat';
+            perbaruiRingkasan();
+            perbaruiInfoBatas();
+            return;
+        }
+        if (log.status === 'selesai' || log.status === 'dihentikan') {
+            dash.selesai = true;
+            dash.catatan = log.status === 'selesai'
+                ? 'Pengiriman selesai. Status Sampai/Dibaca/Belum sampai masih bisa berubah beberapa menit ke depan, biarkan aplikasi tetap terbuka.'
+                : (log.alasan || 'Pengiriman dihentikan.');
+            dash.selesaiCatatan = ' selesai';
+            perbaruiRingkasan();
+            perbaruiInfoBatas();
             return;
         }
 
-        const tbody = document.getElementById('tabel-status-body');
-        let baris = document.getElementById('baris-' + log.id);
-        if (!baris) {
-            baris = document.createElement('tr');
-            baris.id = 'baris-' + log.id;
-            baris.innerHTML = `<td>${log.nama}</td><td>${log.telepon}</td><td class="kolom-status"></td><td class="kolom-ket"></td>`;
-            tbody.appendChild(baris);
-        }
-        baris.querySelector('.kolom-status').innerHTML = `<span class="tag-status ${log.status}">${labelStatus(log.status)}</span>`;
-        baris.querySelector('.kolom-ket').textContent = log.pesanError || '';
-
-        if (log.status !== 'memeriksa') {
-            ringkasan.menunggu = Math.max(0, (ringkasan.menunggu || 0) - 1);
-            ringkasan[log.status] = (ringkasan[log.status] || 0) + 1;
-            perbaruiRingkasan();
-        }
+        terapkanLogDashboard(log);
     });
 
     async function muatAutoReply() {
@@ -2170,6 +2570,128 @@
             perbaruiKartuStatistik();
         }
     });
+
+    // ===== Batas harian & daftar jangan kirim =====
+    async function perbaruiInfoBatas() {
+        try {
+            const b = await window.chatHub.muatBatasBroadcast();
+            const dipakai = Math.min(b.maks, Number(document.getElementById('batas-harian').value) || b.bawaan);
+            document.getElementById('info-batas-harian').textContent = `Terkirim hari ini: ${b.terkirimHariIni} dari ${dipakai} (sisa ${Math.max(0, dipakai - b.terkirimHariIni)}).`;
+        } catch { /* info saja */ }
+    }
+    document.getElementById('batas-harian').addEventListener('input', perbaruiInfoBatas);
+    document.getElementById('jeda-min').addEventListener('change', (e) => { if (Number(e.target.value) < 15) e.target.value = 15; });
+    perbaruiInfoBatas();
+
+    const ALASAN_JANGAN_KIRIM = { minta_berhenti: 'Minta berhenti', manual: 'Ditambah manual' };
+    async function renderJanganKirim() {
+        const el = document.getElementById('daftar-jangan-kirim');
+        const daftar = await window.chatHub.muatJanganKirim();
+        if (daftar.length === 0) { el.innerHTML = '<div style="padding:10px;color:#6b7280;font-size:13px;">Belum ada nomor di daftar ini.</div>'; return; }
+        el.innerHTML = daftar.map((e) => `
+            <div class="baris-pelanggan">
+                <span>${e.nama ? e.nama + ' — ' : ''}${e.nomor}</span>
+                <span class="grup-tag">${ALASAN_JANGAN_KIRIM[e.alasan] || e.alasan}</span>
+                <span class="hapus-kontak" data-nomor="${e.nomor}">izinkan lagi</span>
+            </div>`).join('');
+        el.querySelectorAll('.hapus-kontak').forEach((span) => span.addEventListener('click', async () => {
+            await window.chatHub.hapusJanganKirim(span.dataset.nomor);
+            await renderJanganKirim();
+        }));
+    }
+    document.getElementById('btn-jk-tambah').addEventListener('click', async () => {
+        const nomor = document.getElementById('jk-nomor').value.trim();
+        if (!nomor) { toast('Isi nomornya dulu.', 'gagal'); return; }
+        const ok = await window.chatHub.tambahJanganKirim({ nomor, nama: document.getElementById('jk-nama').value.trim(), alasan: 'manual' });
+        toast(ok ? 'Nomor ditambahkan ke daftar jangan kirim.' : 'Nomor tidak valid atau sudah ada di daftar.', ok ? 'sukses' : 'gagal');
+        document.getElementById('jk-nomor').value = '';
+        document.getElementById('jk-nama').value = '';
+        await renderJanganKirim();
+    });
+    window.chatHub.onJanganKirimBerubah(({ nomor, nama }) => {
+        toast(`${nama || nomor} meminta berhenti dan otomatis masuk daftar jangan kirim.`, 'info');
+        renderJanganKirim();
+    });
+    renderJanganKirim();
+
+    // --- Tampilan Broadcast baru: pratinjau pesan, ringkasan & perkiraan waktu, petunjuk status ---
+    (function () {
+        const $ = (id) => document.getElementById(id);
+
+        function pratinjauPesan(template) {
+            return template
+                .replace(/\{nama\}/gi, 'Budi')
+                .replace(/\{([^{}|]+(?:\|[^{}]+)+)\}/g, (_m, opsi) => opsi.split('|')[0]);
+        }
+
+        function formatDurasi(detik) {
+            const menit = Math.round(detik / 60);
+            if (menit < 1) return 'kurang dari 1 menit';
+            if (menit < 60) return menit + ' menit';
+            const jam = Math.floor(menit / 60);
+            const sisa = menit % 60;
+            return jam + ' jam' + (sisa ? ' ' + sisa + ' menit' : '');
+        }
+
+        function perbaruiRingkasanKirim() {
+            const jumlah = document.querySelectorAll('.chk-pelanggan:checked').length;
+            const template = $('template-pesan').value.trim();
+
+            $('bc-jumlah-pilih').textContent = jumlah ? jumlah + ' penerima dipilih' : 'Belum ada penerima dipilih';
+            $('bc-jumlah-pilih').classList.toggle('kosong', !jumlah);
+            $('bc-hitung-huruf').textContent = template.length + ' karakter';
+            $('bc-pratinjau').textContent = template ? pratinjauPesan(template) : 'Pesan Anda akan tampil di sini.';
+
+            const kotak = $('bc-ringkas');
+            if (!jumlah || !template) {
+                kotak.innerHTML = 'Pilih penerima (Langkah 3) dan tulis pesan (Langkah 4) dulu.';
+                return;
+            }
+
+            const jedaMin = Math.max(15, Number($('jeda-min').value) || 30);
+            const jedaMaks = Math.max(jedaMin + 10, Number($('jeda-maks').value) || 90);
+            let batch = Number($('jeda-batch-setelah').value) || 0;
+            if (jumlah > 10) batch = Math.min(40, Math.max(10, batch || 20));
+            const istirahat = ((Number($('jeda-batch-min').value) || 5) + (Number($('jeda-batch-maks').value) || 10)) / 2 * 60;
+            const mengetik = $('simulasi-mengetik-aktif').checked ? Math.min(40, Math.max(2, template.length / 5.5)) + 2 : 0;
+            const total = jumlah * ((jedaMin + jedaMaks) / 2 + mengetik) + (batch ? Math.floor(jumlah / batch) * istirahat : 0);
+
+            const bukaJam = $('jam-operasional-aktif').checked
+                ? ' Pengiriman hanya berjalan pukul ' + ($('jam-operasional-mulai').value || '08:00') + '-' + ($('jam-operasional-selesai').value || '20:00') + ', sisanya lanjut keesokan hari.'
+                : '';
+            const batasHari = Math.min(300, Number($('batas-harian').value) || 150);
+            const tanpaVariasi = !/\{nama\}/i.test(template) && !/\{[^{}|]+\|[^{}]+\}/.test(template);
+            const peringatan = (jumlah > batasHari ? `<br><b>Perhatian:</b> batas harian ${batasHari} pesan, jadi sisanya baru terkirim di hari berikutnya.` : '')
+                + (jumlah >= 5 && tanpaVariasi ? '<br><b>Perhatian:</b> pesan identik untuk semua penerima. Tambahkan {nama} atau variasi {a|b} supaya tidak terbaca spam.' : '');
+
+            kotak.innerHTML = 'Dikirim ke <b>' + jumlah + ' penerima</b>. Perkiraan waktu: <b>' + formatDurasi(total) + '</b>.' + bukaJam + peringatan;
+        }
+
+        const daftar = $('daftar-pelanggan');
+        daftar.addEventListener('change', perbaruiRingkasanKirim);
+        $('pilih-semua').addEventListener('change', perbaruiRingkasanKirim);
+        new MutationObserver(perbaruiRingkasanKirim).observe(daftar, { childList: true });
+        ['template-pesan', 'jeda-min', 'jeda-maks', 'jeda-batch-setelah', 'jeda-batch-min', 'jeda-batch-maks',
+            'simulasi-mengetik-aktif', 'jam-operasional-aktif', 'jam-operasional-mulai', 'jam-operasional-selesai']
+            .forEach((id) => { $(id).addEventListener('input', perbaruiRingkasanKirim); $(id).addEventListener('change', perbaruiRingkasanKirim); });
+        new MutationObserver(perbaruiRingkasanKirim).observe($('template-pesan'), { attributes: true });
+        $('pilih-template-tersimpan').addEventListener('change', () => setTimeout(perbaruiRingkasanKirim, 0));
+
+        const PETUNJUK_STATUS = {
+            'terputus': 'Nomor belum terhubung. Tunggu QR muncul, atau mulai ulang aplikasi kalau tidak muncul.',
+            'menunggu-scan': 'Scan QR di bawah: buka WhatsApp di HP nomor Broadcast, pilih Perangkat tertaut, lalu Tautkan perangkat.',
+            'terhubung': 'Nomor sudah terhubung dan siap dipakai mengirim.',
+            'sesi-digantikan': 'Nomor ini dibuka di perangkat atau aplikasi lain sehingga sesi di sini diputus. Tutup yang lain, lalu mulai ulang POS Chat agar tidak rebutan sesi.',
+        };
+        const badge = $('status-badge');
+        function perbaruiPetunjukStatus() {
+            const status = badge.textContent.trim();
+            $('petunjuk-status').textContent = PETUNJUK_STATUS[status] || 'Scan QR di bawah memakai WhatsApp di HP nomor Broadcast.';
+        }
+        new MutationObserver(perbaruiPetunjukStatus).observe(badge, { childList: true, characterData: true, subtree: true });
+        perbaruiPetunjukStatus();
+        perbaruiRingkasanKirim();
+    })();
 </script>
 </body>
 </html>
